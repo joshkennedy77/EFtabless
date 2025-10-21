@@ -84,56 +84,32 @@ export default function TavusAvatar({
   }, [isSpeaking]);
 
   return (
-    <div className="relative w-96 h-96">
-      {/* Avatar Container */}
+    <div className="relative w-full h-full">
+      {/* Clickable Olivia Avatar */}
       <div 
         ref={avatarRef}
-        className={`w-full h-full rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center transition-all duration-300 ${
-          isSpeaking ? 'scale-105 shadow-2xl shadow-purple-500/50' : 'scale-100'
+        className={`w-full h-full cursor-pointer transition-all duration-300 ${
+          isSpeaking ? 'scale-105' : 'scale-100'
         }`}
+        style={{
+          backgroundImage: 'url(/olivia.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
       >
-        {isInitialized && isConnected ? (
-          <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center relative overflow-hidden">
-            {/* Tavus Avatar would be rendered here */}
-            <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <p className="text-white text-sm font-medium">Tavus Avatar</p>
-                <p className="text-gray-400 text-xs">Photoreal Concierge</p>
-              </div>
-            </div>
-            
-            {/* Speaking indicator */}
-            {isSpeaking && (
-              <div className="absolute inset-0 rounded-full border-4 border-green-400 animate-ping"></div>
-            )}
-          </div>
-        ) : (
-          <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-600 rounded-full flex items-center justify-center animate-pulse">
-                <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <p className="text-gray-400 text-sm">Loading Avatar...</p>
-            </div>
-          </div>
+        {/* Speaking indicator overlay */}
+        {isSpeaking && (
+          <div className="absolute inset-0 bg-green-500/20 animate-pulse"></div>
         )}
-      </div>
-
-      {/* Connection Status */}
-      <div className="absolute -bottom-2 -right-2">
-        <div className={`w-6 h-6 rounded-full border-2 border-white flex items-center justify-center ${
-          isConnected ? 'bg-green-500' : 'bg-red-500'
-        }`}>
-          <div className={`w-2 h-2 rounded-full ${
-            isConnected ? 'bg-white' : 'bg-white'
-          }`}></div>
+        
+        {/* Connection status overlay */}
+        <div className="absolute top-4 right-4">
+          <div className={`w-4 h-4 rounded-full border-2 border-white ${
+            isConnected ? 'bg-green-500' : 'bg-red-500'
+          }`}>
+            <div className="w-1 h-1 rounded-full bg-white mx-auto mt-0.5"></div>
+          </div>
         </div>
       </div>
     </div>

@@ -95,3 +95,12 @@ jspm_packages/
 
 # Session data (development only)
 data/sessions/*.json
+
+# Netlify
+.netlify/
+dist/
+out/
+
+# Environment variables
+.env.local
+.env.production

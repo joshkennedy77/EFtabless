@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import ConsentModal from '@/components/ConsentModal';
+import TavusAvatar from '@/components/TavusAvatar';
 
 export default function ConciergePage() {
   const [consentGiven, setConsentGiven] = useState(false);
@@ -9,6 +10,8 @@ export default function ConciergePage() {
   const [isRecording, setIsRecording] = useState(false);
   const [userInput, setUserInput] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [tavusConnected, setTavusConnected] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -102,6 +105,14 @@ export default function ConciergePage() {
       {/* Dark overlay for better text readability */}
       <div className="absolute inset-0 bg-black/40"></div>
       
+      {/* Clickable Olivia Avatar */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <TavusAvatar 
+          isConnected={tavusConnected}
+          isSpeaking={isSpeaking}
+          onConnectionChange={setTavusConnected}
+        />
+      </div>
 
       {/* Start Conversation Button */}
       {messages.length === 0 && (
