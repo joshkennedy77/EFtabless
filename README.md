@@ -69,7 +69,7 @@ A tabless website MVP where users talk to a photoreal digital human (video avata
 ├── data/
 │   └── sessions/                  # Session logs (dev)
 └── public/
-    └── logo.svg                   # Brand logo
+    └── logo.png                   # Brand logo
 ```
 
 ## UI Directive Types
