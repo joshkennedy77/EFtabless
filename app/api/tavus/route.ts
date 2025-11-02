@@ -169,3 +169,49 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// End/delete a conversation
+export async function DELETE(req: NextRequest) {
+  try {
+    const conversationId = req.nextUrl.searchParams.get("conversationId");
+    if (!conversationId) {
+      return NextResponse.json({ error: "conversationId required" }, { status: 400 });
+    }
+
+    if (!TAVUS_API_KEY) {
+      return NextResponse.json(
+        { error: "Tavus API key not configured" },
+        { status: 500 }
+      );
+    }
+
+    // End the conversation using Tavus API
+    const response = await fetch(`${TAVUS_BASE_URL}/conversations/${conversationId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": TAVUS_API_KEY,
+      },
+    });
+
+    if (!response.ok && response.status !== 404) {
+      const errorText = await response.text();
+      console.error("[TAVUS] Error ending conversation:", response.status, errorText);
+      throw new Error(`Tavus API error: ${response.status}`);
+    }
+
+    console.log(`[TAVUS] Conversation ${conversationId} ended successfully`);
+
+    return NextResponse.json({
+      success: true,
+      message: "Conversation ended",
+      conversationId,
+    });
+  } catch (error: any) {
+    console.error("[TAVUS] Error ending conversation:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Failed to end conversation" },
+      { status: 500 }
+    );
+  }
+}
+

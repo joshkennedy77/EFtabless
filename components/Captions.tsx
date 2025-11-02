@@ -10,9 +10,10 @@ interface CaptionsProps {
   onStop?: () => void;
   onUserUtterance?: (text: string) => void;
   onActionClick?: (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking") => void;
+  onEndConversation?: () => void;
 }
 
-export default function Captions({ captions, className = "", onStart, onStop, onUserUtterance, onActionClick }: CaptionsProps) {
+export default function Captions({ captions, className = "", onStart, onStop, onUserUtterance, onActionClick, onEndConversation }: CaptionsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);

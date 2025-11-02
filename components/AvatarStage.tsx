@@ -7,6 +7,8 @@ type Props = {
   onStop?: () => void;
   onUserUtterance?: (text: string) => void;
   isRecording?: boolean;
+  onConversationEnd?: () => void;
+  onConversationIdChange?: (conversationId: string | null) => void;
 };
 
 const REPLICA_ID = "r62baeccd777";
@@ -17,14 +19,66 @@ export default function AvatarStage({
   onStart, 
   onStop, 
   onUserUtterance,
-  isRecording = false 
+  isRecording = false,
+  onConversationEnd,
+  onConversationIdChange
 }: Props) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [tavusSessionId, setTavusSessionId] = useState<string | null>(null);
+  const [tavusConversationId, setTavusConversationId] = useState<string | null>(null);
   const [tavusStreamUrl, setTavusStreamUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEnding, setIsEnding] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Function to end Tavus conversation
+  const endConversation = async () => {
+    if (!tavusConversationId || isEnding) return;
+    
+    try {
+      setIsEnding(true);
+      const response = await fetch(`/api/tavus?conversationId=${tavusConversationId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        console.log("✅ Conversation ended");
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to end conversation:", errorData);
+      }
+      
+      // Always clear the UI regardless of API response
+      setTavusStreamUrl(null);
+      setTavusConversationId(null);
+      setTavusSessionId(null);
+      onConversationIdChange?.(null);
+      onConversationEnd?.();
+    } catch (err) {
+      console.error("Error ending conversation:", err);
+      // Still clear UI on error
+      setTavusStreamUrl(null);
+      setTavusConversationId(null);
+      setTavusSessionId(null);
+      onConversationIdChange?.(null);
+      onConversationEnd?.();
+    } finally {
+      setIsEnding(false);
+    }
+  };
+
+  // Cleanup: end conversation when component unmounts
+  useEffect(() => {
+    return () => {
+      if (tavusConversationId && !isEnding) {
+        // End conversation on unmount
+        fetch(`/api/tavus?conversationId=${tavusConversationId}`, {
+          method: "DELETE",
+        }).catch(console.error);
+      }
+    };
+  }, [tavusConversationId, isEnding]);
 
   // Initialize Tavus session
   useEffect(() => {
@@ -54,20 +108,29 @@ export default function AvatarStage({
         if (data.success && data.streamUrl) {
           console.log("✅ Setting stream URL:", data.streamUrl);
           setTavusSessionId(data.sessionId || data.conversationId || PERSONA_ID);
+          const conversationId = data.conversationId;
+          setTavusConversationId(conversationId);
           setTavusStreamUrl(data.streamUrl);
           setIsLoading(false);
+          // Notify parent of conversation ID
+          onConversationIdChange?.(conversationId);
         } else if (data.directEmbed && data.streamUrl) {
           // Direct embed without API key
           console.log("✅ Using direct embed URL:", data.streamUrl);
           setTavusSessionId(PERSONA_ID);
+          setTavusConversationId(null);
           setTavusStreamUrl(data.streamUrl);
           setIsLoading(false);
+          onConversationIdChange?.(null);
         } else if (data.streamUrl) {
           // Response has streamUrl even if success is false
           console.log("⚠️ Using stream URL (success may be false):", data.streamUrl);
           setTavusSessionId(data.sessionId || data.conversationId || PERSONA_ID);
+          const conversationId = data.conversationId;
+          setTavusConversationId(conversationId);
           setTavusStreamUrl(data.streamUrl);
           setIsLoading(false);
+          onConversationIdChange?.(conversationId);
         } else {
           console.error("❌ Tavus API error response:", data);
           throw new Error(data.error || "Failed to initialize Tavus session - no stream URL received");
@@ -75,7 +138,14 @@ export default function AvatarStage({
       } catch (err: any) {
         console.error("Tavus initialization error:", err);
         console.error("Error details:", err);
-        setError(err.message || "Failed to load avatar");
+        
+        // Provide helpful error message
+        let errorMessage = err.message || "Failed to load avatar";
+        if (err.message?.includes("HTTP 500") || err.message?.includes("API key")) {
+          errorMessage = "Tavus API key not configured. Please set TAVUS_API_KEY in your environment variables.";
+        }
+        
+        setError(errorMessage);
         setIsLoading(false);
       }
     };
@@ -103,10 +173,17 @@ export default function AvatarStage({
         </div>
       ) : error ? (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800/50 to-indigo-900/50">
-          <div className="text-center p-6">
+          <div className="text-center p-6 max-w-md">
             <div className="text-red-400 text-4xl mb-4">⚠️</div>
-            <p className="text-red-200 text-sm mb-2">Failed to load avatar</p>
-            <p className="text-blue-200/60 text-xs">{error}</p>
+            <p className="text-red-200 text-sm mb-2 font-semibold">Failed to load avatar</p>
+            <p className="text-blue-200/60 text-xs mb-4">{error}</p>
+            {error.includes("API key") && (
+              <div className="mt-4 p-3 bg-yellow-500/20 border border-yellow-400/30 rounded-lg">
+                <p className="text-yellow-200 text-xs">
+                  <strong>Netlify Setup:</strong> Set <code className="bg-black/30 px-1 rounded">TAVUS_API_KEY</code> in Netlify environment variables.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       ) : tavusStreamUrl ? (
@@ -161,7 +238,7 @@ export default function AvatarStage({
       </div>
 
       {/* Speaking indicator */}
-      {isSpeaking && (
+      {isSpeaking && !tavusConversationId && (
         <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 backdrop-blur-xl border border-emerald-400/30 rounded-full z-20">
           <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
           <span className="text-xs text-emerald-200 font-semibold">Speaking...</span>
@@ -173,6 +250,30 @@ export default function AvatarStage({
         <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-red-500/20 backdrop-blur-xl border border-red-400/30 rounded-full z-20">
           <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse shadow-lg shadow-red-400/50"></div>
           <span className="text-xs text-red-200 font-semibold">Recording...</span>
+        </div>
+      )}
+
+      {/* End Conversation Button - positioned to not overlap with speaking indicator */}
+      {tavusConversationId && !isLoading && !error && (
+        <div className={`absolute top-4 z-20 ${isSpeaking ? 'right-32' : 'right-4'}`}>
+          <button
+            onClick={endConversation}
+            disabled={isEnding}
+            className="px-4 py-2 bg-red-500/80 backdrop-blur-xl border border-red-400/50 rounded-full text-white font-semibold text-sm hover:bg-red-600/80 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            title="End Conversation"
+          >
+            {isEnding ? (
+              <>
+                <span className="animate-spin">⟳</span>
+                <span>Leaving...</span>
+              </>
+            ) : (
+              <>
+                <span>✕</span>
+                <span>Leave</span>
+              </>
+            )}
+          </button>
         </div>
       )}
     </div>

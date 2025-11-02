@@ -27,6 +27,7 @@ export default function ConciergePage() {
   const [isRecording, setIsRecording] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
   const [triggeredAction, setTriggeredAction] = useState<"check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | null>(null);
+  const [tavusConversationId, setTavusConversationId] = useState<string | null>(null);
 
   // Generate session ID only on client side to avoid hydration mismatch
   useEffect(() => {
@@ -165,8 +166,21 @@ export default function ConciergePage() {
     recordEvent("session_start", { timestamp: Date.now() });
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
     recordEvent("session_stop", { timestamp: Date.now() });
+    // End Tavus conversation if active
+    if (tavusConversationId) {
+      try {
+        await fetch(`/api/tavus?conversationId=${tavusConversationId}`, {
+          method: "DELETE",
+        });
+        setTavusConversationId(null);
+        setCaptions([]);
+        setDirectives([DEFAULT_ACTION_BUTTONS]);
+      } catch (error) {
+        console.error("Error ending Tavus conversation:", error);
+      }
+    }
   };
 
   if (hasConsented === false) {
@@ -252,6 +266,14 @@ export default function ConciergePage() {
                 onStart={handleStart}
                 onStop={handleStop}
                 isRecording={isRecording}
+                onConversationIdChange={(id) => setTavusConversationId(id)}
+                onConversationEnd={() => {
+                  // Reset conversation state when Tavus conversation ends
+                  handleStop();
+                  setTavusConversationId(null);
+                  setCaptions([]);
+                  setDirectives([DEFAULT_ACTION_BUTTONS]);
+                }}
               />
             </div>
             <div className="animate-fade-in">
@@ -261,6 +283,11 @@ export default function ConciergePage() {
                 onStop={handleStop}
                 onUserUtterance={handleUserUtterance}
                 onActionClick={handleActionClick}
+                onEndConversation={() => {
+                  handleStop();
+                  setCaptions([]);
+                  setDirectives([DEFAULT_ACTION_BUTTONS]);
+                }}
               />
             </div>
           </div>
