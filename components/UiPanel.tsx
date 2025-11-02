@@ -9,13 +9,17 @@ interface UiPanelProps {
   items: UiDirective[];
   onEmit: (event: string) => void;
   className?: string;
-  triggerAction?: ActionType | null;
+  triggerAction?: ActionType | DoctorActionType | DeltaActionType | null;
+  mode?: "concierge" | "doctor" | "delta";
 }
 
 type ActionType = "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | null;
+type DoctorActionType = "consultation" | "prescription" | "lab-results" | "medical-history" | null;
+type DeltaActionType = "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking" | null;
+type CombinedActionType = ActionType | DoctorActionType | DeltaActionType;
 
-export default function UiPanel({ items, onEmit, className = "", triggerAction }: UiPanelProps) {
-  const [activeForm, setActiveForm] = useState<ActionType>(null);
+export default function UiPanel({ items, onEmit, className = "", triggerAction, mode = "concierge" }: UiPanelProps) {
+  const [activeForm, setActiveForm] = useState<CombinedActionType>(null);
 
   // Handle external action trigger
   useEffect(() => {
@@ -33,12 +37,12 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
     setActiveForm(null);
   };
 
-  const handleActionClick = (action: ActionType) => {
+  const handleActionClick = (action: CombinedActionType) => {
     setActiveForm(action);
     onEmit(`ACTION:${action}`);
   };
 
-  const getFormForAction = (action: ActionType) => {
+  const getFormForAction = (action: CombinedActionType) => {
     switch (action) {
       case "check-in":
         return {
@@ -225,6 +229,389 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
           submit_label: "View Analytics",
           showAnalytics: true
         };
+      // Doctor-specific actions
+      case "consultation":
+        return {
+          title: "Schedule Consultation",
+          fields: [
+            {
+              id: "patient_name",
+              label: "Patient Name",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Full legal name"
+            },
+            {
+              id: "date_of_birth",
+              label: "Date of Birth",
+              kind: "text" as const,
+              required: true,
+              placeholder: "MM/DD/YYYY"
+            },
+            {
+              id: "reason",
+              label: "Reason for Consultation",
+              kind: "select" as const,
+              required: true,
+              options: ["General check-up", "Follow-up", "New symptoms", "Chronic condition management", "Second opinion", "Preventive care"]
+            },
+            {
+              id: "urgency",
+              label: "Urgency Level",
+              kind: "select" as const,
+              required: true,
+              options: ["Routine (within 2 weeks)", "Soon (within 1 week)", "Urgent (within 3 days)", "Emergency (same day)"]
+            },
+            {
+              id: "preferred_date",
+              label: "Preferred Date",
+              kind: "text" as const,
+              required: true,
+              placeholder: "MM/DD/YYYY"
+            },
+            {
+              id: "preferred_time",
+              label: "Preferred Time",
+              kind: "select" as const,
+              required: true,
+              options: ["Morning (8-11 AM)", "Afternoon (12-4 PM)", "Evening (5-7 PM)"]
+            },
+            {
+              id: "current_symptoms",
+              label: "Current Symptoms",
+              kind: "text" as const,
+              placeholder: "Describe any current symptoms..."
+            },
+            {
+              id: "insurance_provider",
+              label: "Insurance Provider",
+              kind: "select" as const,
+              options: ["Blue Cross Blue Shield", "Aetna", "Cigna", "UnitedHealthcare", "Medicare", "Medicaid", "Self-pay", "Other"]
+            }
+          ],
+          submit_label: "Schedule Consultation"
+        };
+      case "prescription":
+        return {
+          title: "Prescription Request",
+          fields: [
+            {
+              id: "patient_name",
+              label: "Patient Name",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Full legal name"
+            },
+            {
+              id: "medication_name",
+              label: "Medication Name",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Name of medication"
+            },
+            {
+              id: "prescription_type",
+              label: "Request Type",
+              kind: "select" as const,
+              required: true,
+              options: ["New prescription", "Refill", "Dosage change", "Substitute medication"]
+            },
+            {
+              id: "pharmacy_name",
+              label: "Pharmacy Name",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Name of pharmacy"
+            },
+            {
+              id: "pharmacy_address",
+              label: "Pharmacy Address",
+              kind: "text" as const,
+              placeholder: "Street address, city, state, zip"
+            },
+            {
+              id: "pharmacy_phone",
+              label: "Pharmacy Phone",
+              kind: "text" as const,
+              placeholder: "(555) 123-4567"
+            },
+            {
+              id: "dosage",
+              label: "Dosage (if known)",
+              kind: "text" as const,
+              placeholder: "e.g., 10mg once daily"
+            },
+            {
+              id: "quantity",
+              label: "Quantity",
+              kind: "select" as const,
+              options: ["30 days", "60 days", "90 days", "As prescribed"]
+            },
+            {
+              id: "notes",
+              label: "Additional Notes",
+              kind: "text" as const,
+              placeholder: "Any additional information..."
+            }
+          ],
+          submit_label: "Submit Prescription Request"
+        };
+      case "lab-results":
+        return {
+          title: "Lab Results & Test Reports",
+          fields: [
+            {
+              id: "patient_name",
+              label: "Patient Name",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Full legal name"
+            },
+            {
+              id: "test_type",
+              label: "What type of results?",
+              kind: "select" as const,
+              required: true,
+              options: ["Blood work", "Imaging (X-ray, MRI, CT)", "Biopsy", "Urine test", "Other lab test"]
+            },
+            {
+              id: "test_date",
+              label: "Test Date",
+              kind: "text" as const,
+              required: true,
+              placeholder: "MM/DD/YYYY"
+            },
+            {
+              id: "ordering_physician",
+              label: "Ordering Physician",
+              kind: "text" as const,
+              placeholder: "Name of ordering doctor"
+            },
+            {
+              id: "view_option",
+              label: "View Options",
+              kind: "select" as const,
+              required: true,
+              options: ["View most recent results", "View all results", "View by test type", "Compare results over time"]
+            },
+            {
+              id: "timeframe",
+              label: "Time Period",
+              kind: "select" as const,
+              options: ["Last 30 days", "Last 3 months", "Last 6 months", "Last year", "All time"]
+            }
+          ],
+          submit_label: "View Lab Results",
+          showAnalytics: true
+        };
+      case "medical-history":
+        return {
+          title: "Medical History & Records",
+          fields: [
+            {
+              id: "patient_name",
+              label: "Patient Name",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Full legal name"
+            },
+            {
+              id: "date_of_birth",
+              label: "Date of Birth",
+              kind: "text" as const,
+              required: true,
+              placeholder: "MM/DD/YYYY"
+            },
+            {
+              id: "request_type",
+              label: "What would you like to view?",
+              kind: "select" as const,
+              required: true,
+              options: ["Complete medical history", "Diagnosis history", "Surgical history", "Medication history", "Allergy history", "Immunization records"]
+            },
+            {
+              id: "timeframe",
+              label: "Time Period",
+              kind: "select" as const,
+              options: ["Last year", "Last 5 years", "Last 10 years", "All time"]
+            },
+            {
+              id: "format",
+              label: "Format",
+              kind: "select" as const,
+              options: ["Digital view", "Download PDF", "Print summary"]
+            }
+          ],
+          submit_label: "View Medical History"
+        };
+      // Delta Airlines-specific actions
+      case "book-flight":
+        return {
+          title: "Book a Flight",
+          fields: [
+            {
+              id: "departure_city",
+              label: "Departure City",
+              kind: "text" as const,
+              required: true,
+              placeholder: "City or Airport Code"
+            },
+            {
+              id: "arrival_city",
+              label: "Arrival City",
+              kind: "text" as const,
+              required: true,
+              placeholder: "City or Airport Code"
+            },
+            {
+              id: "departure_date",
+              label: "Departure Date",
+              kind: "text" as const,
+              required: true,
+              placeholder: "MM/DD/YYYY"
+            },
+            {
+              id: "return_date",
+              label: "Return Date (if round trip)",
+              kind: "text" as const,
+              placeholder: "MM/DD/YYYY or leave blank for one-way"
+            },
+            {
+              id: "passengers",
+              label: "Number of Passengers",
+              kind: "select" as const,
+              required: true,
+              options: ["1", "2", "3", "4", "5", "6+"]
+            },
+            {
+              id: "cabin_class",
+              label: "Cabin Class",
+              kind: "select" as const,
+              required: true,
+              options: ["Main Cabin", "Comfort+", "First Class", "Delta One"]
+            },
+            {
+              id: "flexible_dates",
+              label: "Flexible Dates?",
+              kind: "select" as const,
+              options: ["Yes, ±3 days", "Yes, ±7 days", "No, specific dates only"]
+            },
+            {
+              id: "special_requests",
+              label: "Special Requests",
+              kind: "text" as const,
+              placeholder: "Wheelchair assistance, special meals, etc."
+            }
+          ],
+          submit_label: "Search Flights"
+        };
+      case "flight-check-in":
+        return {
+          title: "Check-In for Your Flight",
+          fields: [
+            {
+              id: "confirmation_number",
+              label: "Confirmation Number",
+              kind: "text" as const,
+              required: true,
+              placeholder: "6-character confirmation code"
+            },
+            {
+              id: "last_name",
+              label: "Last Name",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Last name on reservation"
+            },
+            {
+              id: "flight_date",
+              label: "Flight Date",
+              kind: "text" as const,
+              required: true,
+              placeholder: "MM/DD/YYYY"
+            },
+            {
+              id: "seat_preference",
+              label: "Seat Preference",
+              kind: "select" as const,
+              options: ["Window", "Aisle", "Middle", "No preference"]
+            },
+            {
+              id: "special_assistance",
+              label: "Special Assistance",
+              kind: "select" as const,
+              options: ["None", "Wheelchair", "Unaccompanied minor", "Pet in cabin", "Medical needs"]
+            }
+          ],
+          submit_label: "Check In"
+        };
+      case "flight-status":
+        return {
+          title: "Check Flight Status",
+          fields: [
+            {
+              id: "flight_number",
+              label: "Flight Number",
+              kind: "text" as const,
+              required: true,
+              placeholder: "e.g., DL1234"
+            },
+            {
+              id: "departure_date",
+              label: "Departure Date",
+              kind: "text" as const,
+              required: true,
+              placeholder: "MM/DD/YYYY"
+            },
+            {
+              id: "departure_city",
+              label: "Departure City (optional)",
+              kind: "text" as const,
+              placeholder: "City or Airport Code"
+            },
+            {
+              id: "arrival_city",
+              label: "Arrival City (optional)",
+              kind: "text" as const,
+              placeholder: "City or Airport Code"
+            }
+          ],
+          submit_label: "Check Status",
+          showAnalytics: true
+        };
+      case "baggage-tracking":
+        return {
+          title: "Track Your Baggage",
+          fields: [
+            {
+              id: "baggage_tag_number",
+              label: "Baggage Tag Number",
+              kind: "text" as const,
+              required: true,
+              placeholder: "10-digit tag number"
+            },
+            {
+              id: "last_name",
+              label: "Last Name",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Last name on reservation"
+            },
+            {
+              id: "confirmation_number",
+              label: "Confirmation Number (optional)",
+              kind: "text" as const,
+              placeholder: "6-character confirmation code"
+            },
+            {
+              id: "flight_number",
+              label: "Flight Number (optional)",
+              kind: "text" as const,
+              placeholder: "e.g., DL1234"
+            }
+          ],
+          submit_label: "Track Baggage"
+        };
       default:
         return null;
     }
@@ -244,7 +631,116 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
 
       case "card":
         // Special handling for action buttons card
-        if (directive.id === "action-buttons") {
+        if (directive.id === "action-buttons" || directive.id === "doctor-action-buttons" || directive.id === "delta-action-buttons") {
+          // Delta Airlines mode buttons
+          if (mode === "delta" || directive.id === "delta-action-buttons") {
+            return (
+              <div key={directive.id ?? index} className="p-6 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
+                <div className="space-y-5">
+                  <div>
+                    <h3 className="font-bold text-white text-2xl mb-2">{directive.title}</h3>
+                    {directive.body && (
+                      <p className="text-blue-200/70 leading-relaxed text-sm">{directive.body}</p>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <button
+                      onClick={() => handleActionClick("book-flight")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">✈️</span>
+                        <span>Book a Flight</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("flight-check-in")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🎫</span>
+                        <span>Check-In</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("flight-status")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🔄</span>
+                        <span>Flight Status</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("baggage-tracking")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🧳</span>
+                        <span>Baggage Tracking</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
+          // Doctor mode buttons
+          if (mode === "doctor" || directive.id === "doctor-action-buttons") {
+            return (
+              <div key={directive.id ?? index} className="p-6 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
+                <div className="space-y-5">
+                  <div>
+                    <h3 className="font-bold text-white text-2xl mb-2">{directive.title}</h3>
+                    {directive.body && (
+                      <p className="text-blue-200/70 leading-relaxed text-sm">{directive.body}</p>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <button
+                      onClick={() => handleActionClick("consultation")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🩺</span>
+                        <span>Schedule Consultation</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("prescription")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">💊</span>
+                        <span>Prescription Request</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("lab-results")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🧪</span>
+                        <span>Lab Results</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("medical-history")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">📋</span>
+                        <span>Medical History</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
+          // Concierge mode buttons (default)
           return (
             <div key={directive.id ?? index} className="p-6 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
               <div className="space-y-5">
@@ -468,7 +964,18 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
         <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-xl shadow-blue-500/30">
-              {activeForm === "check-in" ? "🏥" : activeForm === "wellness-tracking" ? "📊" : activeForm === "family-notifications" ? "👨‍👩‍👧" : "🤝"}
+              {activeForm === "check-in" ? "🏥" : 
+               activeForm === "wellness-tracking" ? "📊" : 
+               activeForm === "family-notifications" ? "👨‍👩‍👧" : 
+               activeForm === "care-coordination" ? "🤝" :
+               activeForm === "consultation" ? "🩺" :
+               activeForm === "prescription" ? "💊" :
+               activeForm === "lab-results" ? "🧪" :
+               activeForm === "medical-history" ? "📋" :
+               activeForm === "book-flight" ? "✈️" :
+               activeForm === "flight-check-in" ? "🎫" :
+               activeForm === "flight-status" ? "🔄" :
+               activeForm === "baggage-tracking" ? "🧳" : "📋"}
             </div>
             <h3 className="font-bold text-white text-2xl">{formData.title}</h3>
           </div>

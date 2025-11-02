@@ -6,14 +6,15 @@ import Input from "./ui/Input";
 interface CaptionsProps {
   captions: string[];
   className?: string;
+  mode?: "concierge" | "doctor" | "delta";
   onStart?: () => void;
   onStop?: () => void;
   onUserUtterance?: (text: string) => void;
-  onActionClick?: (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking") => void;
+  onActionClick?: (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | "consultation" | "prescription" | "lab-results" | "medical-history" | "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking") => void;
   onEndConversation?: () => void;
 }
 
-export default function Captions({ captions, className = "", onStart, onStop, onUserUtterance, onActionClick, onEndConversation }: CaptionsProps) {
+export default function Captions({ captions, className = "", mode = "concierge", onStart, onStop, onUserUtterance, onActionClick, onEndConversation }: CaptionsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -72,29 +73,88 @@ export default function Captions({ captions, className = "", onStart, onStop, on
           // Detect action commands (but still show what user said)
           const originalText = finalTranscript.trim(); // Keep original case
           
-          if (text.includes("check in") || text.includes("check-in") || text.includes("hospital")) {
-            setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-            onActionClick?.("check-in");
-            setInput("");
-            return;
+          // Delta Airlines mode voice commands
+          if (mode === "delta") {
+            if (text.includes("book flight") || text.includes("book a flight") || text.includes("reserve flight") || text.includes("search flight") || text.includes("find flight") || text.includes("flight booking")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("book-flight");
+              setInput("");
+              return;
+            }
+            if (text.includes("check in") || text.includes("check-in") || text.includes("flight check in") || text.includes("check in for flight") || text.includes("check in for my flight")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("flight-check-in");
+              setInput("");
+              return;
+            }
+            if (text.includes("flight status") || text.includes("check flight status") || text.includes("where is my flight") || text.includes("flight info") || text.includes("flight information") || text.includes("status of flight")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("flight-status");
+              setInput("");
+              return;
+            }
+            if (text.includes("baggage") || text.includes("baggage tracking") || text.includes("track baggage") || text.includes("where is my bag") || text.includes("lost luggage") || text.includes("track my bag") || text.includes("luggage")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("baggage-tracking");
+              setInput("");
+              return;
+            }
           }
-          if (text.includes("family notification") || text.includes("family notifications") || text.includes("notify family")) {
-            setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-            onActionClick?.("family-notifications");
-            setInput("");
-            return;
+          
+          // Doctor's Assistant mode voice commands
+          if (mode === "doctor") {
+            if (text.includes("consultation") || text.includes("schedule consultation") || text.includes("appointment") || text.includes("see doctor") || text.includes("book appointment")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("consultation");
+              setInput("");
+              return;
+            }
+            if (text.includes("prescription") || text.includes("refill") || text.includes("medication") || text.includes("prescription request") || text.includes("need prescription")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("prescription");
+              setInput("");
+              return;
+            }
+            if (text.includes("lab results") || text.includes("lab test") || text.includes("test results") || text.includes("blood work") || text.includes("lab report")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("lab-results");
+              setInput("");
+              return;
+            }
+            if (text.includes("medical history") || text.includes("medical records") || text.includes("patient records") || text.includes("health records") || text.includes("medical file")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("medical-history");
+              setInput("");
+              return;
+            }
           }
-          if (text.includes("care coordination") || text.includes("care coordination") || text.includes("caregiver")) {
-            setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-            onActionClick?.("care-coordination");
-            setInput("");
-            return;
-          }
-          if (text.includes("wellness") || text.includes("wellness tracking") || text.includes("wellness check") || text.includes("analytics")) {
-            setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-            onActionClick?.("wellness-tracking");
-            setInput("");
-            return;
+          
+          // Concierge mode voice commands (default)
+          if (mode === "concierge") {
+            if (text.includes("check in") || text.includes("check-in") || text.includes("hospital")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("check-in");
+              setInput("");
+              return;
+            }
+            if (text.includes("family notification") || text.includes("family notifications") || text.includes("notify family")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("family-notifications");
+              setInput("");
+              return;
+            }
+            if (text.includes("care coordination") || text.includes("care coordination") || text.includes("caregiver")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("care-coordination");
+              setInput("");
+              return;
+            }
+            if (text.includes("wellness") || text.includes("wellness tracking") || text.includes("wellness check") || text.includes("analytics")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("wellness-tracking");
+              setInput("");
+              return;
+            }
           }
 
           // Default: send as regular message
@@ -132,7 +192,7 @@ export default function Captions({ captions, className = "", onStart, onStop, on
         recognitionRef.current.stop();
       }
     };
-  }, [started, onUserUtterance, onActionClick]);
+  }, [started, onUserUtterance, onActionClick, mode]);
 
   // Auto-scroll to bottom when new captions arrive
   useEffect(() => {

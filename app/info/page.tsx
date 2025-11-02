@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
@@ -6,22 +7,50 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       {/* Header */}
-      <header className="p-4 flex items-center justify-between bg-white/80 backdrop-blur-sm border-b border-gray-200">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-            E
-          </div>
+      <header className="p-6 flex items-center justify-between bg-white/80 backdrop-blur-sm border-b border-gray-200">
+        <Link href="/" className="flex items-center gap-4">
+          <Image 
+            src="/logo.png" 
+            alt="EverFriends Logo" 
+            width={48}
+            height={48}
+            className="rounded-2xl"
+            priority
+            unoptimized
+          />
           <div>
-            <h1 className="font-semibold text-gray-900">EverFriends</h1>
-            <p className="text-sm text-gray-600">A friendly concierge, powered by Human+</p>
+            <h1 className="font-bold text-gray-900 text-xl tracking-tight">EverFriends</h1>
+            <p className="text-sm text-gray-600">Learn More • Powered by Human+</p>
           </div>
         </Link>
-        <nav className="text-sm text-gray-600 flex gap-6">
-          <Link href="/" className="hover:text-gray-900 transition-colors">
-            Back to Concierge
+        <nav className="text-sm text-gray-600 flex gap-4 flex-wrap items-center">
+          <Link 
+            href="/" 
+            className="hover:text-gray-900 transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-gray-100"
+            aria-label="Concierge"
+          >
+            Concierge
           </Link>
-          <Link href="/privacy" className="hover:text-gray-900 transition-colors">
-            Privacy
+          <Link 
+            href="/doctor" 
+            className="hover:text-gray-900 transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-gray-100"
+            aria-label="Doctor's Assistant"
+          >
+            Doctor's Assistant
+          </Link>
+          <Link 
+            href="/delta" 
+            className="hover:text-gray-900 transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-gray-100"
+            aria-label="Delta Airlines Assistant"
+          >
+            Delta Assistant
+          </Link>
+          <Link 
+            href="/info" 
+            className="hover:text-gray-900 transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-gray-100"
+            aria-label="Learn about EverFriends"
+          >
+            Learn More
           </Link>
         </nav>
       </header>

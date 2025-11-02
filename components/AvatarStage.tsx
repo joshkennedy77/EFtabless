@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 
 type Props = {
   avatarId?: string;
+  mode?: "concierge" | "doctor" | "delta";
   onStart?: () => void;
   onStop?: () => void;
   onUserUtterance?: (text: string) => void;
@@ -16,6 +17,7 @@ const PERSONA_ID = "pb8ce5779ad5";
 
 export default function AvatarStage({ 
   avatarId, 
+  mode = "concierge",
   onStart, 
   onStop, 
   onUserUtterance,
@@ -230,7 +232,11 @@ export default function AvatarStage({
       {/* Status text overlay - positioned to cover any text */}
       <div className="absolute bottom-6 left-0 right-0 text-center z-30 px-4">
         <div className="inline-block px-4 py-2 bg-black/60 backdrop-blur-xl border border-white/20 rounded-full">
-          <div className="text-base font-bold text-white drop-shadow-lg">Hospital Concierge</div>
+          <div className="text-base font-bold text-white drop-shadow-lg">
+            {mode === "doctor" ? "Doctor's Assistant" : 
+             mode === "delta" ? "Delta Airlines Assistant" : 
+             "Hospital Concierge"}
+          </div>
           <div className="text-xs text-blue-200/80 font-medium">
             {isLoading ? "Connecting..." : error ? "Connection Error" : "Ready to start conversation"}
           </div>

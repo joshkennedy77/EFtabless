@@ -8,25 +8,25 @@ import ConsentModal from "@/components/ConsentModal";
 import { UiDirective } from "@/lib/schema";
 import { mockRespond, resetMockServer } from "@/lib/mockServer";
 
-// Default action buttons directive for accessibility
-const DEFAULT_ACTION_BUTTONS: UiDirective = {
+// Default action buttons directive for doctor
+const DEFAULT_DOCTOR_ACTION_BUTTONS: UiDirective = {
   type: "card",
-  id: "action-buttons",
-  title: "What Would You Like to do",
+  id: "doctor-action-buttons",
+  title: "How can I help you today?",
   body: "Select an option to get started:"
 };
 
-export default function ConciergePage() {
-  const [directives, setDirectives] = useState<UiDirective[]>([DEFAULT_ACTION_BUTTONS]);
+export default function DoctorPage() {
+  const [directives, setDirectives] = useState<UiDirective[]>([DEFAULT_DOCTOR_ACTION_BUTTONS]);
   const [captions, setCaptions] = useState<string[]>([
-    "Welcome! I'm your Hospital Concierge.",
+    "Hello, I'm your Doctor's Assistant. How can I assist you today?",
     "You can interact with me using voice or by clicking the buttons below."
   ]);
   const [consentModalOpen, setConsentModalOpen] = useState(false);
   const [hasConsented, setHasConsented] = useState<boolean | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
-  const [triggeredAction, setTriggeredAction] = useState<"check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | null>(null);
+  const [triggeredAction, setTriggeredAction] = useState<"consultation" | "prescription" | "lab-results" | "medical-history" | null>(null);
   const [tavusConversationId, setTavusConversationId] = useState<string | null>(null);
 
   // Generate session ID only on client side to avoid hydration mismatch
@@ -40,9 +40,9 @@ export default function ConciergePage() {
     if (consent === "accepted") {
       setHasConsented(true);
       // Ensure action buttons are shown (they're already in initial state)
-      setDirectives([DEFAULT_ACTION_BUTTONS]);
+      setDirectives([DEFAULT_DOCTOR_ACTION_BUTTONS]);
       setCaptions([
-        "Welcome! I'm your Hospital Concierge.",
+        "Hello, I'm your Doctor's Assistant. How can I assist you today?",
         "You can interact with me using voice or by clicking the buttons below."
       ]);
     } else if (consent === "declined") {
@@ -51,9 +51,9 @@ export default function ConciergePage() {
       setConsentModalOpen(true);
       // Even without consent, show buttons for accessibility preview
       // They'll be fully functional once consent is accepted
-      setDirectives([DEFAULT_ACTION_BUTTONS]);
+      setDirectives([DEFAULT_DOCTOR_ACTION_BUTTONS]);
       setCaptions([
-        "Welcome! I'm your Hospital Concierge.",
+        "Hello, I'm your Doctor's Assistant. How can I assist you today?",
         "Please accept the terms to interact with me using voice or buttons."
       ]);
     }
@@ -63,9 +63,9 @@ export default function ConciergePage() {
     setHasConsented(true);
     setConsentModalOpen(false);
     // Ensure action buttons are shown
-    setDirectives([DEFAULT_ACTION_BUTTONS]);
+    setDirectives([DEFAULT_DOCTOR_ACTION_BUTTONS]);
     setCaptions([
-      "Welcome! I'm your Hospital Concierge.",
+      "Hello, I'm your Doctor's Assistant. How can I assist you today?",
       "You can interact with me using voice or by clicking the buttons below."
     ]);
   };
@@ -110,9 +110,9 @@ export default function ConciergePage() {
       // Update directives - ensure action buttons always remain if not explicitly replaced
       const newDirectives = response.envelope.directives;
       // If response doesn't include action buttons and no form is open, keep them visible
-      const hasActionButtons = newDirectives.some(d => d.type === "card" && d.id === "action-buttons");
+      const hasActionButtons = newDirectives.some(d => d.type === "card" && (d.id === "doctor-action-buttons" || d.id === "action-buttons"));
       if (!hasActionButtons && !triggeredAction) {
-        setDirectives([DEFAULT_ACTION_BUTTONS, ...newDirectives]);
+        setDirectives([DEFAULT_DOCTOR_ACTION_BUTTONS, ...newDirectives]);
       } else {
         setDirectives(newDirectives);
       }
@@ -138,16 +138,16 @@ export default function ConciergePage() {
     if (event === "NEW_CONVERSATION") {
       resetMockServer();
       // Keep action buttons for accessibility - always show them
-      setDirectives([DEFAULT_ACTION_BUTTONS]);
+      setDirectives([DEFAULT_DOCTOR_ACTION_BUTTONS]);
       setCaptions([
-        "Welcome! I'm your Hospital Concierge.",
+        "Hello, I'm your Doctor's Assistant. How can I assist you today?",
         "You can interact with me using voice or by clicking the buttons below."
       ]);
       // Note: User messages are cleared in Captions component when captions are cleared
     }
   };
 
-  const handleActionClick = (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking") => {
+  const handleActionClick = (action: "consultation" | "prescription" | "lab-results" | "medical-history") => {
     // Trigger the action to open the form
     setTriggeredAction(action);
     
@@ -156,7 +156,7 @@ export default function ConciergePage() {
     handleEmit(actionEvent);
     
     // Also send as user utterance to get AI response
-    handleUserUtterance(`I want to ${action.replace("-", " ")}`);
+    handleUserUtterance(`I need to ${action.replace("-", " ")}`);
     
     // Clear trigger after a brief moment to allow re-triggering
     setTimeout(() => setTriggeredAction(null), 100);
@@ -176,7 +176,7 @@ export default function ConciergePage() {
         });
         setTavusConversationId(null);
         setCaptions([]);
-        setDirectives([DEFAULT_ACTION_BUTTONS]);
+        setDirectives([DEFAULT_DOCTOR_ACTION_BUTTONS]);
       } catch (error) {
         console.error("Error ending Tavus conversation:", error);
       }
@@ -199,7 +199,7 @@ export default function ConciergePage() {
             Consent Required
           </h1>
           <p className="text-blue-200/80 mb-8 text-lg">
-            To use EverFriends, please accept our terms and enable microphone access.
+            To use Doctor's Assistant, please accept our terms and enable microphone access.
           </p>
           <button
             onClick={() => setConsentModalOpen(true)}
@@ -234,7 +234,7 @@ export default function ConciergePage() {
           />
           <div>
             <h1 className="font-bold text-white text-xl tracking-tight">EverFriends</h1>
-            <p className="text-sm text-blue-200/80">AI Concierge • Powered by Human+</p>
+            <p className="text-sm text-blue-200/80">Doctor's Assistant • Powered by Human+</p>
           </div>
         </div>
         <nav className="text-sm text-blue-200 flex gap-4 flex-wrap items-center">
@@ -283,6 +283,8 @@ export default function ConciergePage() {
           <div className="space-y-6">
             <div className="animate-fade-in">
               <AvatarStage
+                avatarId="doctor"
+                mode="doctor"
                 onUserUtterance={handleUserUtterance}
                 onStart={handleStart}
                 onStop={handleStop}
@@ -293,13 +295,14 @@ export default function ConciergePage() {
                   handleStop();
                   setTavusConversationId(null);
                   setCaptions([]);
-                  setDirectives([DEFAULT_ACTION_BUTTONS]);
+                  setDirectives([DEFAULT_DOCTOR_ACTION_BUTTONS]);
                 }}
               />
             </div>
             <div className="animate-fade-in">
               <Captions 
                 captions={captions}
+                mode="doctor"
                 onStart={handleStart}
                 onStop={handleStop}
                 onUserUtterance={handleUserUtterance}
@@ -307,7 +310,7 @@ export default function ConciergePage() {
                 onEndConversation={() => {
                   handleStop();
                   setCaptions([]);
-                  setDirectives([DEFAULT_ACTION_BUTTONS]);
+                  setDirectives([DEFAULT_DOCTOR_ACTION_BUTTONS]);
                 }}
               />
             </div>
@@ -315,7 +318,12 @@ export default function ConciergePage() {
 
           {/* Right Column - UI Panel */}
           <div className="animate-fade-in">
-            <UiPanel items={directives} onEmit={handleEmit} triggerAction={triggeredAction} />
+            <UiPanel 
+              items={directives} 
+              onEmit={handleEmit} 
+              triggerAction={triggeredAction}
+              mode="doctor"
+            />
           </div>
         </div>
       </section>
@@ -330,7 +338,7 @@ export default function ConciergePage() {
       {/* Footer */}
       <footer className="relative z-10 mt-16 py-8 text-center text-sm text-blue-200/60 border-t border-white/5">
         <p>
-          EverFriends MVP - Built with Next.js, TypeScript, and Tailwind CSS
+          EverFriends MVP - Doctor's Assistant • Built with Next.js, TypeScript, and Tailwind CSS
         </p>
         {sessionId && (
           <p className="mt-1 text-blue-300/50">
@@ -341,3 +349,4 @@ export default function ConciergePage() {
     </main>
   );
 }
+
