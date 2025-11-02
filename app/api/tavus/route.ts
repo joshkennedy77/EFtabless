@@ -10,19 +10,15 @@ export async function POST(req: NextRequest) {
     const replicaId = body.replicaId || "r62baeccd777";
     const personaId = body.personaId || "pb8ce5779ad5";
 
-    // Try to use API if key is available, otherwise use direct embed URL
+    // API key is required - Tavus requires authenticated API calls to create conversations
     if (!TAVUS_API_KEY) {
-      // Fallback: Use direct embed URL without API key
-      const directEmbedUrl = `https://stream.tavusapi.com/realtime/${personaId}`;
-      
-      return NextResponse.json({
-        success: true,
-        sessionId: null,
-        conversationId: null,
-        streamUrl: directEmbedUrl,
-        directEmbed: true,
-        message: "Using direct embed URL (no API key required)",
-      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Tavus API key is required. Please set TAVUS_API_KEY in your environment variables.",
+        },
+        { status: 500 }
+      );
     }
 
     // First, get persona details to understand how to create a session
@@ -88,13 +84,10 @@ export async function POST(req: NextRequest) {
       streamUrl = personaData.stream_url || personaData.player_url || personaData.iframe_url;
     }
 
-    // Final fallback - try constructing a direct URL
+    // If we still don't have a stream URL, we cannot proceed
     if (!streamUrl) {
-      // Try common Tavus URL patterns
-      streamUrl = sessionData?.hosted_url || 
-                  sessionData?.url ||
-                  `https://stream.tavusapi.com/realtime/${personaId}` ||
-                  `https://tavusapi.com/embed/${personaId}`;
+      console.error("[TAVUS] No valid stream URL found in API response");
+      throw new Error("Tavus API did not return a valid stream URL. Please check your API key and persona configuration.");
     }
 
     console.log("[TAVUS] Final stream URL:", streamUrl);
