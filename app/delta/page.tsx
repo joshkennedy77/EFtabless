@@ -147,19 +147,22 @@ export default function DeltaPage() {
     }
   };
 
-  const handleActionClick = (action: "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking") => {
-    // Trigger the action to open the form
-    setTriggeredAction(action);
-    
-    // Emit event for logging
-    const actionEvent = `ACTION:${action}`;
-    handleEmit(actionEvent);
-    
-    // Also send as user utterance to get AI response
-    handleUserUtterance(`I need to ${action.replace("-", " ")}`);
-    
-    // Clear trigger after a brief moment to allow re-triggering
-    setTimeout(() => setTriggeredAction(null), 100);
+  const handleActionClick = (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | "consultation" | "prescription" | "lab-results" | "medical-history" | "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking") => {
+    // Only handle delta-specific actions, ignore others
+    if (action === "book-flight" || action === "flight-check-in" || action === "flight-status" || action === "baggage-tracking") {
+      // Trigger the action to open the form
+      setTriggeredAction(action);
+      
+      // Emit event for logging
+      const actionEvent = `ACTION:${action}`;
+      handleEmit(actionEvent);
+      
+      // Also send as user utterance to get AI response
+      handleUserUtterance(`I need to ${action.replace("-", " ")}`);
+      
+      // Clear trigger after a brief moment to allow re-triggering
+      setTimeout(() => setTriggeredAction(null), 100);
+    }
   };
 
   const handleStart = () => {
