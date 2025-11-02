@@ -27,19 +27,10 @@ function generateResponseForState(state: DialogueState, userInput: string): { ca
         envelope: {
           directives: [
             {
-              type: "notice",
-              text: "Welcome! I can help you set up wellness check-ins, coordinate care, and keep your family connected."
-            },
-            {
               type: "card",
-              id: "welcome-1",
-              title: "Get Started",
-              body: "Let me know what you'd like help with today. I can assist with wellness tracking, family updates, or care coordination.",
-              bullets: ["Daily check-ins", "Family notifications", "Care coordination", "Wellness tracking"],
-              cta: {
-                label: "Tell me more",
-                action: { type: "emit", event: "LEARN_MORE" }
-              }
+              id: "action-buttons",
+              title: "What Would You Like to do",
+              body: "Select an option to get started:"
             }
           ]
         }

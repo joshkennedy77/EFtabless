@@ -99,3 +99,19 @@
 .pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
+
+/* Swoop-in animation for forms */
+@keyframes swoopIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px) translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
+  }
+}
+
+.animate-swoop-in {
+  animation: swoopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}

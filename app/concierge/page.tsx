@@ -1,216 +1,234 @@
-'use client';
-
-import { useState, useEffect, useRef } from 'react';
-import ConsentModal from '@/components/ConsentModal';
-import TavusAvatar from '@/components/TavusAvatar';
+"use client";
+import { useEffect, useState } from "react";
+import AvatarStage from "@/components/AvatarStage";
+import UiPanel from "@/components/UiPanel";
+import Captions from "@/components/Captions";
+import ConsentModal from "@/components/ConsentModal";
+import { UiDirective } from "@/lib/schema";
+import { mockRespond, resetMockServer } from "@/lib/mockServer";
 
 export default function ConciergePage() {
-  const [consentGiven, setConsentGiven] = useState(false);
-  const [messages, setMessages] = useState<Array<{id: string, type: 'user' | 'ai', content: string, timestamp: Date}>>([]);
+  const [directives, setDirectives] = useState<UiDirective[]>([]);
+  const [captions, setCaptions] = useState<string[]>([]);
+  const [consentModalOpen, setConsentModalOpen] = useState(false);
+  const [hasConsented, setHasConsented] = useState<boolean | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [userInput, setUserInput] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const [tavusConnected, setTavusConnected] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const [sessionId, setSessionId] = useState<string>("");
+  const [triggeredAction, setTriggeredAction] = useState<"check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | null>(null);
 
+  // Generate session ID only on client side to avoid hydration mismatch
   useEffect(() => {
-    // Check if consent was already given
-    const hasConsent = localStorage.getItem('everfriends-consent') === 'accepted';
-    setConsentGiven(hasConsent);
+    setSessionId(`session_${Date.now()}`);
+  }, []);
 
-    // Initialize Tavus connection
-    setTimeout(() => {
-      setTavusConnected(true);
-    }, 1000);
+  // Check for existing consent on mount
+  useEffect(() => {
+    const consent = localStorage.getItem("everfriends-consent");
+    if (consent === "accepted") {
+      setHasConsented(true);
+    } else if (consent === "declined") {
+      setHasConsented(false);
+    } else {
+      setConsentModalOpen(true);
+    }
   }, []);
 
   const handleConsentAccept = () => {
-    localStorage.setItem('everfriends-consent', 'accepted');
-    setConsentGiven(true);
+    setHasConsented(true);
+    setConsentModalOpen(false);
   };
 
   const handleConsentDecline = () => {
-    localStorage.setItem('everfriends-consent', 'declined');
-    setConsentGiven(false);
+    setHasConsented(false);
+    setConsentModalOpen(false);
   };
 
-  const handleUserInput = async (input: string) => {
-    if (!input.trim()) return;
+  const recordEvent = async (kind: string, payload: any) => {
+    try {
+      await fetch("/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-session-id": sessionId,
+        },
+        body: JSON.stringify({ kind, payload }),
+      });
+    } catch (error) {
+      console.error("Failed to record event:", error);
+    }
+  };
 
-    const messageId = Date.now().toString();
-    const userMessage = {
-      id: messageId,
-      type: 'user' as const,
-      content: input,
-      timestamp: new Date()
-    };
+  const handleUserUtterance = async (text: string) => {
+    if (!hasConsented) return;
 
-    setMessages(prev => [...prev, userMessage]);
+    setIsRecording(true);
+    recordEvent("user_text", { text });
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'ai' as const,
-        content: `I received your message: "${input}". How can I help you today?`,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiMessage]);
+    try {
+      const response = await mockRespond(text);
       
-      // Trigger avatar speaking
-      setIsSpeaking(true);
-      setTimeout(() => setIsSpeaking(false), 3000);
-    }, 1000);
+      // Add captions with animation
+      response.captions.forEach((caption, index) => {
+        setTimeout(() => {
+          setCaptions((prev) => [...prev, caption]);
+        }, index * 1000); // Stagger captions
+      });
 
-    setUserInput('');
-  };
-
-  const handleMicToggle = () => {
-    setIsListening(!isListening);
-  };
-
-  const handleSendMessage = () => {
-    if (userInput.trim()) {
-      handleUserInput(userInput);
+      // Update directives
+      setDirectives(response.envelope.directives);
+      
+      // Record AI response
+      recordEvent("ai_response", {
+        captions: response.captions,
+        directives: response.envelope.directives,
+      });
+    } catch (error) {
+      console.error("Failed to get AI response:", error);
+      setCaptions((prev) => [...prev, "Sorry, I encountered an error. Please try again."]);
+    } finally {
+      setIsRecording(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const handleEmit = (event: string) => {
+    recordEvent("emit", { event });
+    console.log("Emitted event:", event);
+    
+    // Handle specific events
+    if (event === "NEW_CONVERSATION") {
+      resetMockServer();
+      setDirectives([]);
+      setCaptions([]);
     }
   };
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const handleActionClick = (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking") => {
+    // Trigger the action to open the form
+    setTriggeredAction(action);
+    
+    // Emit event for logging
+    const actionEvent = `ACTION:${action}`;
+    handleEmit(actionEvent);
+    
+    // Also send as user utterance to get AI response
+    handleUserUtterance(`I want to ${action.replace("-", " ")}`);
+    
+    // Clear trigger after a brief moment to allow re-triggering
+    setTimeout(() => setTriggeredAction(null), 100);
+  };
 
-  if (!consentGiven) {
-    return <ConsentModal isOpen={true} onAccept={handleConsentAccept} onDecline={handleConsentDecline} />;
+  const handleStart = () => {
+    recordEvent("session_start", { timestamp: Date.now() });
+  };
+
+  const handleStop = () => {
+    recordEvent("session_stop", { timestamp: Date.now() });
+  };
+
+  if (hasConsented === false) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="w-20 h-20 mx-auto mb-6 bg-gray-200 rounded-full flex items-center justify-center text-4xl">
+            🚫
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+            Consent Required
+          </h1>
+          <p className="text-gray-600 mb-6">
+            To use EverFriends, please accept our terms and enable microphone access.
+          </p>
+          <button
+            onClick={() => setConsentModalOpen(true)}
+            className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            Review Terms & Try Again
+          </button>
+        </div>
+      </main>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Full-screen background with Olivia image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(/olivia.png)',
-        }}
-      ></div>
-      {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/40"></div>
-      
-      {/* Clickable Olivia Avatar */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <TavusAvatar 
-          isConnected={tavusConnected}
-          isSpeaking={isSpeaking}
-          onConnectionChange={setTavusConnected}
-        />
-      </div>
-
-      {/* Start Conversation Button */}
-      {messages.length === 0 && (
-        <button
-          onClick={() => handleUserInput("Hello!")}
-          className="absolute bottom-4 left-4 px-6 py-3 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75"
-        >
-          Start a Conversation
-        </button>
-      )}
-
-      {/* Overlaid Chat Interface */}
-      <div className="absolute bottom-0 left-0 right-0 p-6">
-        {/* Chat Messages */}
-        <div className="max-w-4xl mx-auto mb-6">
-          <div className="bg-black/80 backdrop-blur-sm rounded-2xl p-6 max-h-96 overflow-y-auto">
-            {messages.length > 0 && (
-              <div className="space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                        message.type === 'user'
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-gray-700 text-white'
-                      }`}
-                    >
-                      <p className="text-sm">{message.content}</p>
-                      <p className="text-xs opacity-70 mt-1">
-                        {message.timestamp.toLocaleTimeString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+      {/* Header */}
+      <header className="p-4 flex items-center justify-between bg-white/80 backdrop-blur-sm border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+            E
+          </div>
+          <div>
+            <h1 className="font-semibold text-gray-900">EverFriends</h1>
+            <p className="text-sm text-gray-600">A friendly concierge, powered by Human+</p>
           </div>
         </div>
+        <nav className="text-sm text-gray-600 flex gap-6">
+          <a 
+            href="/" 
+            className="hover:text-gray-900 transition-colors"
+            aria-label="Back to home"
+          >
+            ← Home
+          </a>
+          <button 
+            onClick={() => setConsentModalOpen(true)}
+            className="hover:text-gray-900 transition-colors"
+            aria-label="Privacy settings"
+          >
+            Privacy
+          </button>
+        </nav>
+      </header>
 
-        {/* Input Controls */}
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center space-x-4 bg-black/80 backdrop-blur-sm rounded-2xl p-4">
-            <button
-              onClick={handleMicToggle}
-              className={`p-3 rounded-full transition-all duration-200 ${
-                isListening
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600 text-white'
-              }`}
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
-              </svg>
-            </button>
-
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message or use voice..."
-                className="w-full bg-gray-800 text-white placeholder-gray-400 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500"
+      {/* Main Content */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+          {/* Left Column - Avatar and Captions */}
+          <div className="space-y-6">
+            <div className="animate-fade-in">
+              <AvatarStage
+                onUserUtterance={handleUserUtterance}
+                onStart={handleStart}
+                onStop={handleStop}
+                isRecording={isRecording}
               />
-              {isListening && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                </div>
-              )}
             </div>
+            <div className="animate-fade-in">
+              <Captions 
+                captions={captions}
+                onStart={handleStart}
+                onStop={handleStop}
+                onUserUtterance={handleUserUtterance}
+                onActionClick={handleActionClick}
+              />
+            </div>
+          </div>
 
-            <button
-              onClick={handleSendMessage}
-              disabled={!userInput.trim()}
-              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl transition-colors duration-200"
-            >
-              Send
-            </button>
+          {/* Right Column - UI Panel */}
+          <div className="animate-fade-in">
+            <UiPanel items={directives} onEmit={handleEmit} triggerAction={triggeredAction} />
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Live Captions */}
-      <div className="absolute top-6 left-6 right-6">
-        <div className="bg-black/60 backdrop-blur-sm rounded-xl p-4 max-w-2xl">
-          <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-white text-sm font-medium">Live Captions</span>
-          </div>
-          <p className="text-gray-300 text-sm">
-            {isListening ? 'Listening...' : 'Waiting for conversation to begin...'}
+      {/* Consent Modal */}
+      <ConsentModal
+        isOpen={consentModalOpen}
+        onAccept={handleConsentAccept}
+        onDecline={handleConsentDecline}
+      />
+
+      {/* Footer */}
+      <footer className="mt-16 py-8 text-center text-sm text-gray-500 border-t border-gray-200 bg-white/50">
+        <p>
+          EverFriends MVP - Built with Next.js, TypeScript, and Tailwind CSS
+        </p>
+        {sessionId && (
+          <p className="mt-1">
+            Session ID: {sessionId}
           </p>
-        </div>
-      </div>
-    </div>
+        )}
+      </footer>
+    </main>
   );
 }

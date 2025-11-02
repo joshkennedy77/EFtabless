@@ -16,6 +16,7 @@ const config: Config = {
         'fade-in': 'fadeIn 0.3s ease-out',
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
         'typing': 'typing 2s steps(40, end)',
+        'swoop-in': 'swoopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
       keyframes: {
         fadeIn: {
@@ -29,6 +30,10 @@ const config: Config = {
         typing: {
           'from': { width: '0' },
           'to': { width: '100%' },
+        },
+        swoopIn: {
+          '0%': { opacity: '0', transform: 'translateX(-30px) translateY(20px) scale(0.95)' },
+          '100%': { opacity: '1', transform: 'translateX(0) translateY(0) scale(1)' },
         },
       },
     },

@@ -23,8 +23,6 @@ A tabless website MVP where users talk to a photoreal digital human (video avata
 
 ## Getting Started
 
-### Local Development
-
 1. **Install dependencies**:
    ```bash
    npm install
@@ -43,27 +41,6 @@ A tabless website MVP where users talk to a photoreal digital human (video avata
 
 4. **Open your browser**:
    Navigate to [http://localhost:3000](http://localhost:3000)
-
-### Netlify Deployment
-
-1. **Connect to Netlify**:
-   - Connect your GitHub repository to Netlify
-   - Or drag and drop the `dist` folder after running `npm run build`
-
-2. **Build Settings**:
-   - **Build command**: `npm run build`
-   - **Publish directory**: `dist`
-   - **Node version**: 18
-
-3. **Environment Variables** (Optional):
-   - Add your API keys in Netlify dashboard
-   - `NEXT_PUBLIC_SITE_URL`: Your Netlify site URL
-   - `NEXT_PUBLIC_TAVUS_API_KEY`: Your Tavus API key
-   - `NEXT_PUBLIC_OPENAI_API_KEY`: Your OpenAI API key
-
-4. **Deploy**:
-   - Netlify will automatically build and deploy your site
-   - Your site will be available at `https://your-site-name.netlify.app`
 
 ## Project Structure
 
@@ -92,7 +69,7 @@ A tabless website MVP where users talk to a photoreal digital human (video avata
 ├── data/
 │   └── sessions/                  # Session logs (dev)
 └── public/
-    └── logo.png                   # Brand logo
+    └── logo.svg                   # Brand logo
 ```
 
 ## UI Directive Types
