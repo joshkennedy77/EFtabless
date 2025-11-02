@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 type Props = {
   avatarId?: string;
@@ -9,6 +9,9 @@ type Props = {
   isRecording?: boolean;
 };
 
+const REPLICA_ID = "r62baeccd777";
+const PERSONA_ID = "pb8ce5779ad5";
+
 export default function AvatarStage({ 
   avatarId, 
   onStart, 
@@ -17,6 +20,68 @@ export default function AvatarStage({
   isRecording = false 
 }: Props) {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [tavusSessionId, setTavusSessionId] = useState<string | null>(null);
+  const [tavusStreamUrl, setTavusStreamUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Initialize Tavus session
+  useEffect(() => {
+    const initializeTavus = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch("/api/tavus", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            replicaId: REPLICA_ID,
+            personaId: PERSONA_ID,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Tavus API HTTP error:", response.status, errorText);
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log("Tavus API response:", JSON.stringify(data, null, 2));
+        
+        if (data.success && data.streamUrl) {
+          console.log("✅ Setting stream URL:", data.streamUrl);
+          setTavusSessionId(data.sessionId || data.conversationId || PERSONA_ID);
+          setTavusStreamUrl(data.streamUrl);
+          setIsLoading(false);
+        } else if (data.directEmbed && data.streamUrl) {
+          // Direct embed without API key
+          console.log("✅ Using direct embed URL:", data.streamUrl);
+          setTavusSessionId(PERSONA_ID);
+          setTavusStreamUrl(data.streamUrl);
+          setIsLoading(false);
+        } else if (data.streamUrl) {
+          // Response has streamUrl even if success is false
+          console.log("⚠️ Using stream URL (success may be false):", data.streamUrl);
+          setTavusSessionId(data.sessionId || data.conversationId || PERSONA_ID);
+          setTavusStreamUrl(data.streamUrl);
+          setIsLoading(false);
+        } else {
+          console.error("❌ Tavus API error response:", data);
+          throw new Error(data.error || "Failed to initialize Tavus session - no stream URL received");
+        }
+      } catch (err: any) {
+        console.error("Tavus initialization error:", err);
+        console.error("Error details:", err);
+        setError(err.message || "Failed to load avatar");
+        setIsLoading(false);
+      }
+    };
+
+    initializeTavus();
+  }, []);
 
   // Simulate speaking animation
   useEffect(() => {
@@ -29,30 +94,71 @@ export default function AvatarStage({
 
   return (
     <div className="relative w-full max-w-[720px] aspect-video rounded-3xl overflow-hidden bg-gradient-to-br from-slate-800/50 to-indigo-900/50 backdrop-blur-xl border-2 border-white/10 shadow-2xl">
-      {/* Avatar with olivia.png background */}
-      <div 
-        className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300 ${
-          isSpeaking ? "scale-105" : "scale-100"
-        }`}
-        style={{
-          backgroundImage: 'url(/olivia.png)',
-        }}
-      >
-        {/* Modern overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-      </div>
+      {isLoading ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800/50 to-indigo-900/50">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-blue-200 text-sm">Loading avatar...</p>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-800/50 to-indigo-900/50">
+          <div className="text-center p-6">
+            <div className="text-red-400 text-4xl mb-4">⚠️</div>
+            <p className="text-red-200 text-sm mb-2">Failed to load avatar</p>
+            <p className="text-blue-200/60 text-xs">{error}</p>
+          </div>
+        </div>
+      ) : tavusStreamUrl ? (
+        <div className="absolute inset-0 w-full h-full">
+          {tavusStreamUrl.includes('daily.co') ? (
+            // Daily.co room - use their embed format
+            <iframe
+              ref={iframeRef}
+              src={`${tavusStreamUrl}?embed=true&hideMicButton=false&hideCamButton=false&hideJoinButton=true&hideFullScreenButton=false`}
+              className="w-full h-full border-0 rounded-3xl"
+              allow="microphone; camera; autoplay; encrypted-media; display-capture"
+              allowFullScreen
+              title="Tavus Avatar"
+              style={{ minHeight: '100%' }}
+            />
+          ) : (
+            // Other Tavus URLs
+            <iframe
+              ref={iframeRef}
+              src={tavusStreamUrl}
+              className="w-full h-full border-0 rounded-3xl"
+              allow="microphone; camera; autoplay; encrypted-media; display-capture"
+              allowFullScreen
+              title="Tavus Avatar"
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
+              style={{ minHeight: '100%' }}
+            />
+          )}
+        </div>
+      ) : (
+        // Fallback to placeholder if Tavus URL is not available
+        <div 
+          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300 ${
+            isSpeaking ? "scale-105" : "scale-100"
+          }`}
+          style={{
+            backgroundImage: 'url(/olivia.png)',
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+        </div>
+      )}
       
-      {/* Status text overlay - positioned to cover any text in the image */}
+      {/* Status text overlay - positioned to cover any text */}
       <div className="absolute bottom-6 left-0 right-0 text-center z-30 px-4">
         <div className="inline-block px-4 py-2 bg-black/60 backdrop-blur-xl border border-white/20 rounded-full">
           <div className="text-base font-bold text-white drop-shadow-lg">Hospital Concierge</div>
           <div className="text-xs text-blue-200/80 font-medium">
-            Ready to start conversation
+            {isLoading ? "Connecting..." : error ? "Connection Error" : "Ready to start conversation"}
           </div>
         </div>
       </div>
-
-
 
       {/* Speaking indicator */}
       {isSpeaking && (
