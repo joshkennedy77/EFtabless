@@ -234,105 +234,115 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
     switch (directive.type) {
       case "notice":
         return (
-          <Card key={index} className="bg-blue-50 border-l-4 border-blue-500">
+          <div key={index} className="p-4 rounded-2xl bg-blue-500/10 backdrop-blur-xl border border-blue-400/30">
             <div className="flex items-start gap-3">
-              <div className="text-blue-500 text-lg">ℹ️</div>
-              <p className="text-blue-800">{directive.text}</p>
+              <div className="text-blue-400 text-xl">ℹ️</div>
+              <p className="text-blue-200/90 font-medium">{directive.text}</p>
             </div>
-          </Card>
+          </div>
         );
 
       case "card":
         // Special handling for action buttons card
         if (directive.id === "action-buttons") {
           return (
-            <Card key={directive.id ?? index} className="hover:shadow-lg transition-shadow">
-              <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900 text-lg">{directive.title}</h3>
-                {directive.body && (
-                  <p className="text-gray-700 leading-relaxed text-sm">{directive.body}</p>
-                )}
+            <div key={directive.id ?? index} className="p-6 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
+              <div className="space-y-5">
+                <div>
+                  <h3 className="font-bold text-white text-2xl mb-2">{directive.title}</h3>
+                  {directive.body && (
+                    <p className="text-blue-200/70 leading-relaxed text-sm">{directive.body}</p>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 gap-3">
                   <button
                     onClick={() => handleActionClick("check-in")}
-                    className="w-full px-4 py-3 text-left text-white font-medium rounded-lg shadow-lg hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    style={{ backgroundColor: '#3769f6' }}
+                    className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
                   >
-                    Check In
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">🏥</span>
+                      <span>Check In</span>
+                    </div>
                   </button>
                   <button
                     onClick={() => handleActionClick("family-notifications")}
-                    className="w-full px-4 py-3 text-left text-white font-medium rounded-lg shadow-lg hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    style={{ backgroundColor: '#3769f6' }}
+                    className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
                   >
-                    Family Notifications
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">👨‍👩‍👧</span>
+                      <span>Family Notifications</span>
+                    </div>
                   </button>
                   <button
                     onClick={() => handleActionClick("care-coordination")}
-                    className="w-full px-4 py-3 text-left text-white font-medium rounded-lg shadow-lg hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    style={{ backgroundColor: '#3769f6' }}
+                    className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
                   >
-                    Care Coordination
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">🤝</span>
+                      <span>Care Coordination</span>
+                    </div>
                   </button>
                   <button
                     onClick={() => handleActionClick("wellness-tracking")}
-                    className="w-full px-4 py-3 text-left text-white font-medium rounded-lg shadow-lg hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    style={{ backgroundColor: '#3769f6' }}
+                    className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
                   >
-                    Wellness Tracking
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">📊</span>
+                      <span>Wellness Tracking</span>
+                    </div>
                   </button>
                 </div>
               </div>
-            </Card>
+            </div>
           );
         }
         
         // Regular card rendering
         return (
-          <Card key={directive.id ?? index} className="hover:shadow-lg transition-shadow">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900 text-lg">{directive.title}</h3>
+          <div key={directive.id ?? index} className="p-6 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
+            <div className="space-y-4">
+              <h3 className="font-bold text-white text-xl">{directive.title}</h3>
               {directive.body && (
-                <p className="text-gray-700 leading-relaxed">{directive.body}</p>
+                <p className="text-blue-200/80 leading-relaxed">{directive.body}</p>
               )}
               {directive.bullets && (
-                <ul className="space-y-1">
+                <ul className="space-y-2">
                   {directive.bullets.map((bullet, bulletIndex) => (
-                    <li key={bulletIndex} className="flex items-start gap-2 text-sm text-gray-600">
-                      <span className="text-green-500 mt-1">•</span>
+                    <li key={bulletIndex} className="flex items-start gap-3 text-sm text-blue-200/90">
+                      <span className="text-emerald-400 mt-0.5 font-bold">•</span>
                       <span>{bullet}</span>
                     </li>
                   ))}
                 </ul>
               )}
               {directive.cta && (
-                <div className="pt-2">
-                  <Button
+                <div className="pt-3">
+                  <button
                     onClick={() => {
                       if (directive.cta?.action.type === "emit" && directive.cta.action.event) {
                         onEmit(directive.cta.action.event);
                       }
                     }}
-                    className="w-full"
+                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 shadow-lg shadow-blue-500/30 transform hover:scale-[1.02]"
                   >
                     {directive.cta.label}
-                  </Button>
+                  </button>
                 </div>
               )}
             </div>
-          </Card>
+          </div>
         );
 
       case "image":
         return (
-          <Card key={index} className="p-0 overflow-hidden">
+          <div key={index} className="p-0 overflow-hidden rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl">
             <img
               src={directive.url}
               alt={directive.alt}
-              className="w-full h-auto rounded-xl"
+              className="w-full h-auto rounded-2xl"
               loading="lazy"
             />
-          </Card>
+          </div>
         );
 
       case "form":
@@ -452,16 +462,20 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
 
     return (
       <div
-        className={`bg-white border border-gray-200 p-6 animate-swoop-in mt-4 shadow-lg`}
-        style={{ borderRadius: '4px' }}
+        className={`bg-white/5 backdrop-blur-2xl border-2 border-white/10 p-8 animate-swoop-in mt-4 shadow-2xl`}
+        style={{ borderRadius: '24px' }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="font-semibold text-gray-900 text-xl">{formData.title}</h3>
+        <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-xl shadow-blue-500/30">
+              {activeForm === "check-in" ? "🏥" : activeForm === "wellness-tracking" ? "📊" : activeForm === "family-notifications" ? "👨‍👩‍👧" : "🤝"}
+            </div>
+            <h3 className="font-bold text-white text-2xl">{formData.title}</h3>
+          </div>
           <button
             onClick={() => setActiveForm(null)}
-            className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+            className="text-white/60 hover:text-white hover:bg-white/10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 text-2xl leading-none"
             aria-label="Close form"
-            style={{ width: '24px', height: '24px', lineHeight: '1' }}
           >
             ×
           </button>
@@ -474,52 +488,50 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
           }}
           className="space-y-4"
         >
-          <div className="space-y-4">
+          <div className="space-y-5">
             {formData.fields.map((field) => (
-              <div key={field.id}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div key={field.id} className="group">
+                <label className="block text-sm font-bold text-white/90 mb-2 tracking-wide">
                   {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                  {field.required && <span className="text-red-400 ml-1">*</span>}
                 </label>
                 {field.kind === "text" && (
                   <input
                     name={field.id}
                     placeholder={field.placeholder}
                     required={field.required}
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                    style={{ borderRadius: '2px' }}
+                    className="w-full px-4 py-3 border-2 border-white/10 rounded-xl bg-white/5 backdrop-blur-xl text-white placeholder:text-blue-200/50 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-200 hover:border-white/20 shadow-lg"
                   />
                 )}
                 {field.kind === "select" && (
                   <select
                     name={field.id}
                     required={field.required}
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent appearance-none bg-white"
-                    style={{ borderRadius: '2px', backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E\")", backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
+                    className="w-full px-4 py-3 border-2 border-white/10 rounded-xl bg-white/5 backdrop-blur-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-200 hover:border-white/20 appearance-none cursor-pointer shadow-lg"
+                    style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3E%3C/svg%3E\")", backgroundPosition: 'right 1rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.25em 1.25em', paddingRight: '2.75rem' }}
                   >
-                    <option value="">Select an option</option>
+                    <option value="" className="bg-slate-900 text-gray-400">Select an option</option>
                     {field.options?.map((option) => (
-                      <option key={option} value={option}>
+                      <option key={option} value={option} className="bg-slate-900 text-white">
                         {option}
                       </option>
                     ))}
                   </select>
                 )}
                 {field.kind === "chips" && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {field.options?.map((option) => (
                       <label
                         key={option}
-                        className="flex items-center gap-2 px-3 py-2 border border-gray-300 cursor-pointer hover:bg-gray-50 transition-colors"
-                        style={{ borderRadius: '2px' }}
+                        className="flex items-center gap-2 px-4 py-2.5 border-2 border-white/10 rounded-xl cursor-pointer hover:border-blue-400/50 hover:bg-blue-500/20 transition-all duration-200 bg-white/5 backdrop-blur-xl shadow-lg group/chip"
                       >
                         <input
                           type="checkbox"
                           name={field.id}
                           value={option}
-                          style={{ borderRadius: '2px' }}
+                          className="w-4 h-4 text-blue-500 border-white/30 rounded focus:ring-blue-400 focus:ring-2 cursor-pointer bg-white/10"
                         />
-                        <span className="text-sm">{option}</span>
+                        <span className="text-sm font-medium text-white/90 group-hover/chip:text-white">{option}</span>
                       </label>
                     ))}
                   </div>
@@ -529,20 +541,27 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
           </div>
           
           {formData.showAnalytics && (
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200" style={{ borderRadius: '2px' }}>
-              <h4 className="font-semibold text-blue-900 mb-2">Analytics Preview</h4>
-              <div className="space-y-2 text-sm text-blue-800">
-                <div className="flex justify-between">
-                  <span>Wellness Score:</span>
-                  <span className="font-semibold">85%</span>
+            <div className="mt-8 p-6 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 backdrop-blur-xl border-2 border-blue-400/30 rounded-2xl shadow-2xl">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xl">📊</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Check-ins Completed:</span>
-                  <span className="font-semibold">28/30</span>
+                <h4 className="font-bold text-white text-lg">Analytics Preview</h4>
+              </div>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center p-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+                  <span className="text-blue-200 font-semibold">Wellness Score:</span>
+                  <span className="font-bold text-white text-base">85%</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Trend:</span>
-                  <span className="font-semibold text-green-600">↑ Improving</span>
+                <div className="flex justify-between items-center p-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+                  <span className="text-blue-200 font-semibold">Check-ins Completed:</span>
+                  <span className="font-bold text-white text-base">28/30</span>
+                </div>
+                <div className="flex justify-between items-center p-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+                  <span className="text-blue-200 font-semibold">Trend:</span>
+                  <span className="font-bold text-emerald-400 text-base flex items-center gap-1">
+                    <span>↑</span> Improving
+                  </span>
                 </div>
               </div>
             </div>
@@ -550,8 +569,7 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
 
           <button
             type="submit"
-            className="w-full mt-6 bg-black text-white font-medium py-3 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition-colors"
-            style={{ borderRadius: '2px' }}
+            className="w-full mt-8 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-4 rounded-2xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200 shadow-xl shadow-blue-500/40 hover:shadow-2xl hover:shadow-blue-500/50 transform hover:scale-[1.02]"
           >
             {formData.submit_label}
           </button>
@@ -563,12 +581,12 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction }
   return (
     <div className={`w-full max-w-md space-y-4 ${className}`}>
       {items.length === 0 ? (
-        <Card className="text-center py-8">
-          <div className="text-gray-500">
-            <div className="text-4xl mb-2">💬</div>
-            <p>Start a conversation to see AI responses here</p>
+        <div className="text-center py-12 px-6 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-xl">
+          <div className="text-blue-200/60">
+            <div className="text-5xl mb-4">💬</div>
+            <p className="text-white/70 font-medium">Start a conversation to see AI responses here</p>
           </div>
-        </Card>
+        </div>
       ) : (
         <>
           {items.map((directive, index) => renderDirective(directive, index))}

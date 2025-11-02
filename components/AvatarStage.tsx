@@ -28,7 +28,7 @@ export default function AvatarStage({
   }, [isRecording]);
 
   return (
-    <div className="relative w-full max-w-[720px] aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 backdrop-blur">
+    <div className="relative w-full max-w-[720px] aspect-video rounded-3xl overflow-hidden bg-gradient-to-br from-slate-800/50 to-indigo-900/50 backdrop-blur-xl border-2 border-white/10 shadow-2xl">
       {/* Avatar with olivia.png background */}
       <div 
         className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300 ${
@@ -38,15 +38,17 @@ export default function AvatarStage({
           backgroundImage: 'url(/olivia.png)',
         }}
       >
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/20"></div>
+        {/* Modern overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
       </div>
       
-      {/* Status text overlay */}
-      <div className="absolute bottom-20 left-0 right-0 text-center text-white/90 z-10">
-        <div className="text-lg font-medium drop-shadow-lg">Photoreal Concierge</div>
-        <div className="text-sm opacity-90 drop-shadow-lg">
-          Ready to start conversation
+      {/* Status text overlay - positioned to cover any text in the image */}
+      <div className="absolute bottom-6 left-0 right-0 text-center z-30 px-4">
+        <div className="inline-block px-4 py-2 bg-black/60 backdrop-blur-xl border border-white/20 rounded-full">
+          <div className="text-base font-bold text-white drop-shadow-lg">Hospital Concierge</div>
+          <div className="text-xs text-blue-200/80 font-medium">
+            Ready to start conversation
+          </div>
         </div>
       </div>
 
@@ -54,17 +56,17 @@ export default function AvatarStage({
 
       {/* Speaking indicator */}
       {isSpeaking && (
-        <div className="absolute top-4 right-4 flex items-center gap-2 text-white/80">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-sm">Speaking...</span>
+        <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 backdrop-blur-xl border border-emerald-400/30 rounded-full z-20">
+          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
+          <span className="text-xs text-emerald-200 font-semibold">Speaking...</span>
         </div>
       )}
 
       {/* Recording indicator */}
       {isRecording && (
-        <div className="absolute top-4 left-4 flex items-center gap-2 text-white/80">
-          <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-          <span className="text-sm">Recording...</span>
+        <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-red-500/20 backdrop-blur-xl border border-red-400/30 rounded-full z-20">
+          <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse shadow-lg shadow-red-400/50"></div>
+          <span className="text-xs text-red-200 font-semibold">Recording...</span>
         </div>
       )}
     </div>

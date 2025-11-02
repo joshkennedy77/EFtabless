@@ -7,9 +7,20 @@ import ConsentModal from "@/components/ConsentModal";
 import { UiDirective } from "@/lib/schema";
 import { mockRespond, resetMockServer } from "@/lib/mockServer";
 
+// Default action buttons directive for accessibility
+const DEFAULT_ACTION_BUTTONS: UiDirective = {
+  type: "card",
+  id: "action-buttons",
+  title: "What Would You Like to do",
+  body: "Select an option to get started:"
+};
+
 export default function ConciergePage() {
-  const [directives, setDirectives] = useState<UiDirective[]>([]);
-  const [captions, setCaptions] = useState<string[]>([]);
+  const [directives, setDirectives] = useState<UiDirective[]>([DEFAULT_ACTION_BUTTONS]);
+  const [captions, setCaptions] = useState<string[]>([
+    "Welcome! I'm your Hospital Concierge.",
+    "You can interact with me using voice or by clicking the buttons below."
+  ]);
   const [consentModalOpen, setConsentModalOpen] = useState(false);
   const [hasConsented, setHasConsented] = useState<boolean | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -26,16 +37,35 @@ export default function ConciergePage() {
     const consent = localStorage.getItem("everfriends-consent");
     if (consent === "accepted") {
       setHasConsented(true);
+      // Ensure action buttons are shown (they're already in initial state)
+      setDirectives([DEFAULT_ACTION_BUTTONS]);
+      setCaptions([
+        "Welcome! I'm your Hospital Concierge.",
+        "You can interact with me using voice or by clicking the buttons below."
+      ]);
     } else if (consent === "declined") {
       setHasConsented(false);
     } else {
       setConsentModalOpen(true);
+      // Even without consent, show buttons for accessibility preview
+      // They'll be fully functional once consent is accepted
+      setDirectives([DEFAULT_ACTION_BUTTONS]);
+      setCaptions([
+        "Welcome! I'm your Hospital Concierge.",
+        "Please accept the terms to interact with me using voice or buttons."
+      ]);
     }
   }, []);
 
   const handleConsentAccept = () => {
     setHasConsented(true);
     setConsentModalOpen(false);
+    // Ensure action buttons are shown
+    setDirectives([DEFAULT_ACTION_BUTTONS]);
+    setCaptions([
+      "Welcome! I'm your Hospital Concierge.",
+      "You can interact with me using voice or by clicking the buttons below."
+    ]);
   };
 
   const handleConsentDecline = () => {
@@ -59,7 +89,8 @@ export default function ConciergePage() {
   };
 
   const handleUserUtterance = async (text: string) => {
-    if (!hasConsented) return;
+    // Only block if consent was explicitly declined, not if it's null (pending)
+    if (hasConsented === false) return;
 
     setIsRecording(true);
     recordEvent("user_text", { text });
@@ -74,8 +105,15 @@ export default function ConciergePage() {
         }, index * 1000); // Stagger captions
       });
 
-      // Update directives
-      setDirectives(response.envelope.directives);
+      // Update directives - ensure action buttons always remain if not explicitly replaced
+      const newDirectives = response.envelope.directives;
+      // If response doesn't include action buttons and no form is open, keep them visible
+      const hasActionButtons = newDirectives.some(d => d.type === "card" && d.id === "action-buttons");
+      if (!hasActionButtons && !triggeredAction) {
+        setDirectives([DEFAULT_ACTION_BUTTONS, ...newDirectives]);
+      } else {
+        setDirectives(newDirectives);
+      }
       
       // Record AI response
       recordEvent("ai_response", {
@@ -97,8 +135,13 @@ export default function ConciergePage() {
     // Handle specific events
     if (event === "NEW_CONVERSATION") {
       resetMockServer();
-      setDirectives([]);
-      setCaptions([]);
+      // Keep action buttons for accessibility - always show them
+      setDirectives([DEFAULT_ACTION_BUTTONS]);
+      setCaptions([
+        "Welcome! I'm your Hospital Concierge.",
+        "You can interact with me using voice or by clicking the buttons below."
+      ]);
+      // Note: User messages are cleared in Captions component when captions are cleared
     }
   };
 
@@ -127,20 +170,25 @@ export default function ConciergePage() {
 
   if (hasConsented === false) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gray-200 rounded-full flex items-center justify-center text-4xl">
+      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        </div>
+        <div className="relative z-10 text-center max-w-md mx-auto p-8">
+          <div className="w-24 h-24 mx-auto mb-6 bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl flex items-center justify-center text-5xl shadow-xl">
             🚫
           </div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+          <h1 className="text-3xl font-bold text-white mb-4">
             Consent Required
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-blue-200/80 mb-8 text-lg">
             To use EverFriends, please accept our terms and enable microphone access.
           </p>
           <button
             onClick={() => setConsentModalOpen(true)}
-            className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+            className="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-2xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 shadow-xl shadow-blue-500/40 transform hover:scale-105"
           >
             Review Terms & Try Again
           </button>
@@ -150,29 +198,35 @@ export default function ConciergePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+
       {/* Header */}
-      <header className="p-4 flex items-center justify-between bg-white/80 backdrop-blur-sm border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+      <header className="relative z-10 p-6 flex items-center justify-between bg-white/5 backdrop-blur-xl border-b border-white/10">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30">
             E
           </div>
           <div>
-            <h1 className="font-semibold text-gray-900">EverFriends</h1>
-            <p className="text-sm text-gray-600">A friendly concierge, powered by Human+</p>
+            <h1 className="font-bold text-white text-xl tracking-tight">EverFriends</h1>
+            <p className="text-sm text-blue-200/80">AI Concierge • Powered by Human+</p>
           </div>
         </div>
-        <nav className="text-sm text-gray-600 flex gap-6">
+        <nav className="text-sm text-blue-200 flex gap-6">
           <a 
             href="/" 
-            className="hover:text-gray-900 transition-colors"
+            className="hover:text-white transition-colors duration-200 font-medium"
             aria-label="Back to home"
           >
             ← Home
           </a>
           <button 
             onClick={() => setConsentModalOpen(true)}
-            className="hover:text-gray-900 transition-colors"
+            className="hover:text-white transition-colors duration-200 font-medium"
             aria-label="Privacy settings"
           >
             Privacy
@@ -181,7 +235,7 @@ export default function ConciergePage() {
       </header>
 
       {/* Main Content */}
-      <section className="container mx-auto px-4 py-8">
+      <section className="relative z-10 container mx-auto px-6 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
           {/* Left Column - Avatar and Captions */}
           <div className="space-y-6">
@@ -219,12 +273,12 @@ export default function ConciergePage() {
       />
 
       {/* Footer */}
-      <footer className="mt-16 py-8 text-center text-sm text-gray-500 border-t border-gray-200 bg-white/50">
+      <footer className="relative z-10 mt-16 py-8 text-center text-sm text-blue-200/60 border-t border-white/5">
         <p>
           EverFriends MVP - Built with Next.js, TypeScript, and Tailwind CSS
         </p>
         {sessionId && (
-          <p className="mt-1">
+          <p className="mt-1 text-blue-300/50">
             Session ID: {sessionId}
           </p>
         )}
