@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import AvatarStage from "@/components/AvatarStage";
 import UiPanel from "@/components/UiPanel";
 import Captions from "@/components/Captions";
@@ -208,9 +209,15 @@ export default function ConciergePage() {
       {/* Header */}
       <header className="relative z-10 p-6 flex items-center justify-between bg-white/5 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30">
-            E
-          </div>
+          <Image 
+            src="/logo.png" 
+            alt="EverFriends Logo" 
+            width={48}
+            height={48}
+            className="rounded-2xl"
+            priority
+            unoptimized
+          />
           <div>
             <h1 className="font-bold text-white text-xl tracking-tight">EverFriends</h1>
             <p className="text-sm text-blue-200/80">AI Concierge • Powered by Human+</p>
