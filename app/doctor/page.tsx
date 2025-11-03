@@ -59,7 +59,7 @@ export default function DoctorPage() {
     }
   }, []);
 
-  const handleConsentAccept = () => {
+  const handleConsentAccept = async () => {
     setHasConsented(true);
     setConsentModalOpen(false);
     // Ensure action buttons are shown
@@ -68,6 +68,20 @@ export default function DoctorPage() {
       "Hello, I'm your Doctor's Assistant. How can I assist you today?",
       "You can interact with me using voice or by clicking the buttons below."
     ]);
+    
+    // Request microphone permission now (within user interaction context from button click)
+    try {
+      console.log("🎤 Requesting microphone permission (user clicked Accept)...");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      console.log("✅ Microphone permission granted after consent");
+      window.dispatchEvent(new CustomEvent('microphone-permission-granted'));
+    } catch (error: any) {
+      console.log("⚠️ Microphone permission not granted:", error);
+      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        window.dispatchEvent(new CustomEvent('microphone-permission-denied'));
+      }
+    }
   };
 
   const handleConsentDecline = () => {

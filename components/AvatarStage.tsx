@@ -32,6 +32,7 @@ export default function AvatarStage({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEnding, setIsEnding] = useState(false);
+  const [micPermissionGranted, setMicPermissionGranted] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Function to end Tavus conversation
@@ -82,11 +83,46 @@ export default function AvatarStage({
     };
   }, [tavusConversationId, isEnding]);
 
-  // Initialize Tavus session
+  // Listen for microphone permission granted event
+  useEffect(() => {
+    const handleMicPermissionGranted = () => {
+      console.log("📢 AvatarStage: Microphone permission granted event received");
+      setMicPermissionGranted(true);
+    };
+    
+    window.addEventListener('microphone-permission-granted', handleMicPermissionGranted);
+    
+    // Also check permission status on mount
+    const checkPermission = async () => {
+      try {
+        const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        if (result.state === 'granted') {
+          setMicPermissionGranted(true);
+        }
+      } catch (e) {
+        // Permission API not supported
+      }
+    };
+    checkPermission();
+    
+    return () => {
+      window.removeEventListener('microphone-permission-granted', handleMicPermissionGranted);
+    };
+  }, []);
+
+  // Initialize Tavus session - triggered by mic permission event or on mount if already granted
   useEffect(() => {
     const initializeTavus = async () => {
+      // Wait for consent to be accepted
+      const consent = localStorage.getItem("everfriends-consent");
+      if (consent !== "accepted") {
+        console.log("⏳ Avatar: Waiting for consent before loading...");
+        return;
+      }
+      
       try {
         setIsLoading(true);
+        
         const response = await fetch("/api/tavus", {
           method: "POST",
           headers: {
@@ -152,8 +188,34 @@ export default function AvatarStage({
       }
     };
 
+    // Check consent on mount
     initializeTavus();
-  }, []);
+    
+    // Also listen for consent changes via storage event
+    const handleStorageChange = () => {
+      const consent = localStorage.getItem("everfriends-consent");
+      if (consent === "accepted") {
+        console.log("📢 Avatar: Consent accepted, loading avatar...");
+        initializeTavus();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also poll for consent (same-tab updates)
+    const consentCheckInterval = setInterval(() => {
+      const consent = localStorage.getItem("everfriends-consent");
+      if (consent === "accepted" && !tavusStreamUrl && !isLoading && !error) {
+        console.log("📢 Avatar: Consent detected, loading avatar...");
+        initializeTavus();
+      }
+    }, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(consentCheckInterval);
+    };
+  }, [micPermissionGranted]);
 
   // Simulate speaking animation
   useEffect(() => {
@@ -188,34 +250,35 @@ export default function AvatarStage({
             )}
           </div>
         </div>
-      ) : tavusStreamUrl ? (
-        <div className="absolute inset-0 w-full h-full">
-          {tavusStreamUrl.includes('daily.co') ? (
-            // Daily.co room - use their embed format
-            <iframe
-              ref={iframeRef}
-              src={`${tavusStreamUrl}?embed=true&hideMicButton=false&hideCamButton=false&hideJoinButton=true&hideFullScreenButton=false`}
-              className="w-full h-full border-0 rounded-3xl"
-              allow="microphone; camera; autoplay; encrypted-media; display-capture"
-              allowFullScreen
-              title="Tavus Avatar"
-              style={{ minHeight: '100%' }}
-            />
-          ) : (
-            // Other Tavus URLs
-            <iframe
-              ref={iframeRef}
-              src={tavusStreamUrl}
-              className="w-full h-full border-0 rounded-3xl"
-              allow="microphone; camera; autoplay; encrypted-media; display-capture"
-              allowFullScreen
-              title="Tavus Avatar"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
-              style={{ minHeight: '100%' }}
-            />
-          )}
-        </div>
-      ) : (
+        ) : tavusStreamUrl ? (
+          <div className="absolute inset-0 w-full h-full">
+            {tavusStreamUrl.includes('daily.co') ? (
+              // Daily.co room - use their embed format with auto-join
+              // Note: Mic permission should be granted before iframe loads (in initializeTavus)
+              <iframe
+                ref={iframeRef}
+                src={`${tavusStreamUrl}?embed=true&hideMicButton=false&hideCamButton=false&hideJoinButton=true&hideFullScreenButton=false&enablePrejoinUI=false&startVideoOff=false&startAudioOff=false&autoJoin=true&showLeaveButton=false`}
+                className="w-full h-full border-0 rounded-3xl"
+                allow="microphone; camera; autoplay; encrypted-media; display-capture"
+                allowFullScreen
+                title="Tavus Avatar"
+                style={{ minHeight: '100%' }}
+              />
+            ) : (
+              // Other Tavus URLs
+              <iframe
+                ref={iframeRef}
+                src={tavusStreamUrl}
+                className="w-full h-full border-0 rounded-3xl"
+                allow="microphone; camera; autoplay; encrypted-media; display-capture"
+                allowFullScreen
+                title="Tavus Avatar"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
+                style={{ minHeight: '100%' }}
+              />
+            )}
+          </div>
+        ) : (
         // Fallback to placeholder if Tavus URL is not available
         <div 
           className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-300 ${

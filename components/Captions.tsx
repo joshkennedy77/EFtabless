@@ -12,32 +12,135 @@ interface CaptionsProps {
   onUserUtterance?: (text: string) => void;
   onActionClick?: (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | "consultation" | "prescription" | "lab-results" | "medical-history" | "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking" | "account-balance" | "transfer-funds" | "bill-pay" | "transaction-history" | "loan-inquiry" | "deposit-check") => void;
   onEndConversation?: () => void;
+  onConsentAccepted?: () => void; // Called when consent is accepted to request mic permission
 }
 
-export default function Captions({ captions, className = "", mode = "concierge", onStart, onStop, onUserUtterance, onActionClick, onEndConversation }: CaptionsProps) {
+export default function Captions({ captions, className = "", mode = "concierge", onStart, onStop, onUserUtterance, onActionClick, onEndConversation, onConsentAccepted }: CaptionsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
+  const startedRef = useRef(false);
+  const autoStartAttemptedRef = useRef(false);
   const [started, setStarted] = useState(false);
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [micPermission, setMicPermission] = useState<"granted" | "denied" | "prompt">("prompt");
   const [userMessages, setUserMessages] = useState<Array<{ text: string; timestamp: number }>>([]);
 
-  // Request microphone permission on component mount
+  // Check microphone permission status (but don't request yet - browsers require user interaction)
   useEffect(() => {
-    const requestMicPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        setMicPermission("granted");
-        stream.getTracks().forEach(track => track.stop());
-      } catch (error) {
-        console.log("Microphone permission denied:", error);
-        setMicPermission("denied");
+    const checkPermission = () => {
+      // Check if we already have permission by querying the permission API
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'microphone' as PermissionName }).then((result) => {
+          if (result.state === 'granted') {
+            setMicPermission("granted");
+          } else if (result.state === 'denied') {
+            setMicPermission("denied");
+          } else {
+            setMicPermission("prompt");
+          }
+          
+          // Listen for permission changes
+          result.onchange = () => {
+            if (result.state === 'granted') {
+              setMicPermission("granted");
+            } else if (result.state === 'denied') {
+              setMicPermission("denied");
+            }
+          };
+        }).catch(() => {
+          // Permission API not supported, keep as "prompt"
+          setMicPermission("prompt");
+        });
+      } else {
+        // Permission API not available, keep as "prompt"
+        setMicPermission("prompt");
       }
     };
-    requestMicPermission();
-  }, []);
+    
+    checkPermission();
+    
+    // Also check when consent changes (triggered by localStorage event)
+    const handleStorageChange = () => {
+      const consent = localStorage.getItem("everfriends-consent");
+      if (consent === "accepted") {
+        // Small delay to let permission request complete
+        setTimeout(checkPermission, 500);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Listen for custom events when permission is granted/denied
+    const handlePermissionGranted = () => {
+      console.log("📢 Received microphone-permission-granted event");
+      setMicPermission("granted");
+      // Force a permission check update
+      setTimeout(() => {
+        if (navigator.permissions && navigator.permissions.query) {
+          navigator.permissions.query({ name: 'microphone' as PermissionName }).then((result) => {
+            console.log("🔍 Permission state after event:", result.state);
+            if (result.state === 'granted') {
+              setMicPermission("granted");
+            }
+          });
+        }
+      }, 100);
+    };
+    const handlePermissionDenied = () => {
+      console.log("📢 Received microphone-permission-denied event");
+      setMicPermission("denied");
+    };
+    
+    window.addEventListener('microphone-permission-granted', handlePermissionGranted);
+    window.addEventListener('microphone-permission-denied', handlePermissionDenied);
+    
+    // Also check periodically if localStorage changed (for same-tab updates)
+    const interval = setInterval(() => {
+      const consent = localStorage.getItem("everfriends-consent");
+      if (consent === "accepted" && micPermission === "prompt") {
+        checkPermission();
+      }
+    }, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('microphone-permission-granted', handlePermissionGranted);
+      window.removeEventListener('microphone-permission-denied', handlePermissionDenied);
+      clearInterval(interval);
+    };
+  }, [micPermission]);
+
+  // Request microphone permission when consent is accepted (user interaction context)
+  // This is exposed so parent component can call it when consent modal is accepted
+  const requestMicPermission = async () => {
+    try {
+      console.log("🎤 Requesting microphone permission (user interaction)...");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setMicPermission("granted");
+      stream.getTracks().forEach(track => track.stop()); // Stop the stream, we just needed permission
+      console.log("✅ Microphone permission granted");
+      return true;
+    } catch (error: any) {
+      console.log("❌ Microphone permission denied:", error);
+      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        setMicPermission("denied");
+      }
+      return false;
+    }
+  };
+
+  // Expose permission request function to parent via callback
+  useEffect(() => {
+    if (onConsentAccepted) {
+      // Create a function that can be called from parent
+      (window as any).__requestMicPermission = requestMicPermission;
+      return () => {
+        delete (window as any).__requestMicPermission;
+      };
+    }
+  }, [onConsentAccepted]);
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -216,10 +319,11 @@ export default function Captions({ captions, className = "", mode = "concierge",
 
       recognitionRef.current.onend = () => {
         setIsListening(false);
-        // Restart if still started
-        if (started) {
+        // Restart if still started - use ref to get current value
+        if (startedRef.current && recognitionRef.current) {
           try {
-            recognitionRef.current?.start();
+            recognitionRef.current.start();
+            setIsListening(true);
           } catch (e) {
             // Recognition already started or error
           }
@@ -233,6 +337,120 @@ export default function Captions({ captions, className = "", mode = "concierge",
     };
   }, [started, onUserUtterance, onActionClick, mode]);
 
+  // Sync startedRef with started state
+  useEffect(() => {
+    startedRef.current = started;
+  }, [started]);
+
+  // Auto-start speech recognition when permission is granted and consent is accepted
+  // This effect watches for when micPermission becomes "granted"
+  useEffect(() => {
+    console.log("🔍 Auto-start effect triggered", { 
+      micPermission, 
+      autoStartAttempted: autoStartAttemptedRef.current,
+      started,
+      startedRef: startedRef.current,
+      hasRecognition: !!recognitionRef.current
+    });
+
+    // Reset autoStartAttemptedRef when permission changes back to prompt (new session)
+    if (micPermission === "prompt") {
+      autoStartAttemptedRef.current = false;
+      return;
+    }
+
+    // Only attempt if permission is granted and we haven't tried yet
+    if (micPermission !== "granted") {
+      console.log("⏸️ Auto-start skipped: micPermission is", micPermission);
+      return;
+    }
+    
+    if (autoStartAttemptedRef.current) {
+      console.log("⏸️ Auto-start skipped: already attempted");
+      return;
+    }
+    
+    if (startedRef.current || started) {
+      console.log("⏸️ Auto-start skipped: already started");
+      return;
+    }
+    
+    if (!recognitionRef.current) {
+      console.log("⏸️ Auto-start skipped: recognition not initialized");
+      return;
+    }
+
+    const consent = localStorage.getItem("everfriends-consent");
+    if (consent !== "accepted") {
+      console.log("⏸️ Auto-start skipped: consent not accepted, consent is:", consent);
+      return;
+    }
+
+    // Check if speech recognition is available
+    const isSecureContext = window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const hasSpeechRecognition = typeof window !== "undefined" && ("webkitSpeechRecognition" in window || "SpeechRecognition" in window);
+    
+    console.log("🔍 Speech recognition check", { isSecureContext, hasSpeechRecognition });
+    
+    if (!hasSpeechRecognition || !isSecureContext) {
+      console.log("⏸️ Auto-start skipped: speech recognition not available");
+      autoStartAttemptedRef.current = true;
+      return;
+    }
+
+    const autoStart = async () => {
+      console.log("⏳ Auto-start: waiting 500ms before starting...");
+      // Small delay to ensure everything is ready
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (startedRef.current || started || !recognitionRef.current) {
+        console.log("⏸️ Auto-start aborted: state changed during delay");
+        return;
+      }
+
+      console.log("🚀 Auto-starting speech recognition NOW...");
+      autoStartAttemptedRef.current = true;
+      
+      try {
+        // Verify we have permission
+        console.log("🔍 Verifying microphone permission...");
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        console.log("✅ Microphone permission verified");
+        
+        // Start recognition
+        startedRef.current = true;
+        setStarted(true);
+        onStart?.();
+
+        if (recognitionRef.current) {
+          try {
+            console.log("🎤 Starting speech recognition object...");
+            recognitionRef.current.start();
+            console.log("✅ Auto-started speech recognition successfully!");
+            setIsListening(true);
+          } catch (e: any) {
+            console.error("❌ Failed to start recognition object:", e);
+            startedRef.current = false;
+            setStarted(false);
+            autoStartAttemptedRef.current = false; // Allow retry via button
+          }
+        }
+      } catch (error: any) {
+        console.error("❌ Auto-start microphone access failed:", error);
+        if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+          setMicPermission("denied");
+        }
+        startedRef.current = false;
+        setStarted(false);
+        autoStartAttemptedRef.current = false; // Allow retry via button
+      }
+    };
+
+    autoStart();
+  }, [micPermission, started, onStart]);
+
+
   // Auto-scroll to bottom when new captions arrive
   useEffect(() => {
     if (containerRef.current) {
@@ -241,31 +459,69 @@ export default function Captions({ captions, className = "", mode = "concierge",
   }, [captions, userMessages]);
 
   const handleStart = async () => {
-    if (micPermission === "denied") {
-      alert("Microphone permission is required for voice interaction. Please enable it in your browser settings.");
+    console.log("🎯 handleStart called", { 
+      hasRecognition: !!recognitionRef.current, 
+      started, 
+      micPermission,
+      startedRef: startedRef.current 
+    });
+    
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not available in your browser. Please use Chrome or Edge.");
       return;
     }
+    
+    if (started || startedRef.current) {
+      console.log("⏸️ Already started, skipping");
+      return;
+    }
+    
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      // ALWAYS request microphone permission when user clicks start
+      console.log("🎤 Requesting microphone permission (user clicked Start)...");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      console.log("✅ Microphone permission granted via getUserMedia");
+      setMicPermission("granted");
+      
+      // Dispatch event to update other components
+      window.dispatchEvent(new CustomEvent('microphone-permission-granted'));
+      
+      // Small delay to ensure state updates
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      startedRef.current = true;
       setStarted(true);
       onStart?.();
       
-      // Start speech recognition
       if (recognitionRef.current) {
         try {
           recognitionRef.current.start();
           setIsListening(true);
-        } catch (e) {
-          console.log("Speech recognition already started or not available");
+          console.log("✅ Speech recognition started successfully!");
+        } catch (e: any) {
+          console.error("❌ Failed to start recognition object:", e);
+          alert(`Failed to start speech recognition: ${e.message || e.name || 'Unknown error'}`);
+          startedRef.current = false;
+          setStarted(false);
         }
       }
-    } catch (error) {
-      console.error("Failed to start voice interaction:", error);
-      alert("Failed to start voice interaction. Please check your microphone permissions.");
+    } catch (error: any) {
+      console.error("❌ Failed to get microphone access:", error);
+      setMicPermission("denied");
+      window.dispatchEvent(new CustomEvent('microphone-permission-denied'));
+      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        alert("Microphone access was denied. Please allow microphone access in your browser settings and try again.");
+      } else if (error.name === "NotFoundError") {
+        alert("No microphone found. Please connect a microphone and try again.");
+      } else {
+        alert(`Failed to access microphone: ${error.message || error.name || 'Unknown error'}`);
+      }
     }
   };
 
   const handleStop = () => {
+    startedRef.current = false;
     setStarted(false);
     setIsListening(false);
     if (recognitionRef.current) {
@@ -393,3 +649,4 @@ export default function Captions({ captions, className = "", mode = "concierge",
     </div>
   );
 }
+
