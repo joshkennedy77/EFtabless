@@ -653,7 +653,7 @@ export default function Captions({ captions, className = "", mode = "concierge",
     const messageText = input.trim();
     // Add user message to captions
     setUserMessages(prev => [...prev, { text: messageText, timestamp: Date.now() }]);
-              currentOnUserUtterance?.(messageText);
+              onUserUtteranceRef.current?.(messageText);
     setInput("");
     inputRef.current?.focus();
   };
