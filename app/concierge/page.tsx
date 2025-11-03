@@ -145,7 +145,7 @@ export default function ConciergePage() {
     }
   };
 
-  const handleActionClick = (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | "consultation" | "prescription" | "lab-results" | "medical-history" | "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking") => {
+  const handleActionClick = (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | "consultation" | "prescription" | "lab-results" | "medical-history" | "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking" | "account-balance" | "transfer-funds" | "bill-pay" | "transaction-history" | "loan-inquiry" | "deposit-check") => {
     // Only handle concierge-specific actions, ignore others
     if (action === "check-in" || action === "family-notifications" || action === "care-coordination" || action === "wellness-tracking") {
       // Trigger the action to open the form

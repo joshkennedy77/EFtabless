@@ -1,4 +1,14 @@
 {
+  "/_not-found": "app/_not-found.js",
+  "/api/events/route": "app/api/events/route.js",
+  "/api/realtime/route": "app/api/realtime/route.js",
+  "/api/tavus/route": "app/api/tavus/route.js",
+  "/api/tavus/webhook/route": "app/api/tavus/webhook/route.js",
+  "/bank/page": "app/bank/page.js",
   "/concierge/page": "app/concierge/page.js",
+  "/delta/page": "app/delta/page.js",
+  "/doctor/page": "app/doctor/page.js",
+  "/info/page": "app/info/page.js",
+  "/learn/page": "app/learn/page.js",
   "/page": "app/page.js"
 }

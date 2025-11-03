@@ -9,14 +9,15 @@ interface UiPanelProps {
   items: UiDirective[];
   onEmit: (event: string) => void;
   className?: string;
-  triggerAction?: ActionType | DoctorActionType | DeltaActionType | null;
-  mode?: "concierge" | "doctor" | "delta";
+  triggerAction?: ActionType | DoctorActionType | DeltaActionType | BankActionType | null;
+  mode?: "concierge" | "doctor" | "delta" | "bank";
 }
 
 type ActionType = "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | null;
 type DoctorActionType = "consultation" | "prescription" | "lab-results" | "medical-history" | null;
 type DeltaActionType = "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking" | null;
-type CombinedActionType = ActionType | DoctorActionType | DeltaActionType;
+type BankActionType = "account-balance" | "transfer-funds" | "bill-pay" | "transaction-history" | "loan-inquiry" | "deposit-check" | null;
+type CombinedActionType = ActionType | DoctorActionType | DeltaActionType | BankActionType;
 
 export default function UiPanel({ items, onEmit, className = "", triggerAction, mode = "concierge" }: UiPanelProps) {
   const [activeForm, setActiveForm] = useState<CombinedActionType>(null);
@@ -612,6 +613,229 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction, 
           ],
           submit_label: "Track Baggage"
         };
+      // Bank-specific actions
+      case "account-balance":
+        return {
+          title: "Account Balance Inquiry",
+          fields: [
+            {
+              id: "account_type",
+              label: "Account Type",
+              kind: "select" as const,
+              required: true,
+              options: ["Checking", "Savings", "Credit Card", "Loan", "Investment", "All Accounts"]
+            },
+            {
+              id: "account_number",
+              label: "Account Number (optional)",
+              kind: "text" as const,
+              placeholder: "Leave blank to view all accounts"
+            }
+          ],
+          submit_label: "View Balance"
+        };
+      case "transfer-funds":
+        return {
+          title: "Transfer Funds",
+          fields: [
+            {
+              id: "from_account",
+              label: "From Account",
+              kind: "select" as const,
+              required: true,
+              options: ["Checking", "Savings", "Credit Card"]
+            },
+            {
+              id: "to_account",
+              label: "To Account",
+              kind: "select" as const,
+              required: true,
+              options: ["Checking", "Savings", "External Account", "Loan Payment"]
+            },
+            {
+              id: "amount",
+              label: "Amount",
+              kind: "text" as const,
+              required: true,
+              placeholder: "$0.00"
+            },
+            {
+              id: "transfer_type",
+              label: "Transfer Type",
+              kind: "select" as const,
+              required: true,
+              options: ["One-time", "Recurring"]
+            },
+            {
+              id: "memo",
+              label: "Memo (optional)",
+              kind: "text" as const,
+              placeholder: "Add a note for your records"
+            }
+          ],
+          submit_label: "Transfer Funds"
+        };
+      case "bill-pay":
+        return {
+          title: "Pay Bills",
+          fields: [
+            {
+              id: "payee",
+              label: "Payee Name",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Company or person name"
+            },
+            {
+              id: "account_number",
+              label: "Account Number",
+              kind: "text" as const,
+              required: true,
+              placeholder: "Your account number with payee"
+            },
+            {
+              id: "from_account",
+              label: "Pay From",
+              kind: "select" as const,
+              required: true,
+              options: ["Checking", "Savings"]
+            },
+            {
+              id: "amount",
+              label: "Payment Amount",
+              kind: "text" as const,
+              required: true,
+              placeholder: "$0.00"
+            },
+            {
+              id: "payment_date",
+              label: "Payment Date",
+              kind: "text" as const,
+              required: true,
+              placeholder: "MM/DD/YYYY"
+            },
+            {
+              id: "payment_type",
+              label: "Payment Type",
+              kind: "select" as const,
+              required: true,
+              options: ["One-time", "Recurring"]
+            }
+          ],
+          submit_label: "Schedule Payment"
+        };
+      case "transaction-history":
+        return {
+          title: "Transaction History",
+          fields: [
+            {
+              id: "account_type",
+              label: "Account Type",
+              kind: "select" as const,
+              required: true,
+              options: ["Checking", "Savings", "Credit Card", "All Accounts"]
+            },
+            {
+              id: "date_range",
+              label: "Date Range",
+              kind: "select" as const,
+              required: true,
+              options: ["Last 7 days", "Last 30 days", "Last 3 months", "Last 6 months", "Custom range"]
+            },
+            {
+              id: "transaction_type",
+              label: "Transaction Type",
+              kind: "select" as const,
+              options: ["All", "Deposits", "Withdrawals", "Transfers", "Purchases", "Payments"]
+            },
+            {
+              id: "min_amount",
+              label: "Minimum Amount (optional)",
+              kind: "text" as const,
+              placeholder: "$0.00"
+            },
+            {
+              id: "max_amount",
+              label: "Maximum Amount (optional)",
+              kind: "text" as const,
+              placeholder: "$0.00"
+            }
+          ],
+          submit_label: "View Transactions"
+        };
+      case "loan-inquiry":
+        return {
+          title: "Loan Inquiry",
+          fields: [
+            {
+              id: "loan_type",
+              label: "Loan Type",
+              kind: "select" as const,
+              required: true,
+              options: ["Personal Loan", "Auto Loan", "Mortgage", "Home Equity", "Student Loan", "Business Loan"]
+            },
+            {
+              id: "inquiry_type",
+              label: "What would you like to know?",
+              kind: "select" as const,
+              required: true,
+              options: ["Apply for a new loan", "Check loan status", "Make a payment", "View loan details", "Refinance options"]
+            },
+            {
+              id: "loan_amount",
+              label: "Loan Amount (if applying)",
+              kind: "text" as const,
+              placeholder: "$0.00"
+            },
+            {
+              id: "purpose",
+              label: "Loan Purpose (if applying)",
+              kind: "text" as const,
+              placeholder: "Describe the purpose of the loan"
+            }
+          ],
+          submit_label: "Submit Inquiry"
+        };
+      case "deposit-check":
+        return {
+          title: "Deposit Check",
+          fields: [
+            {
+              id: "check_amount",
+              label: "Check Amount",
+              kind: "text" as const,
+              required: true,
+              placeholder: "$0.00"
+            },
+            {
+              id: "to_account",
+              label: "Deposit To",
+              kind: "select" as const,
+              required: true,
+              options: ["Checking", "Savings"]
+            },
+            {
+              id: "check_number",
+              label: "Check Number",
+              kind: "text" as const,
+              placeholder: "Optional"
+            },
+            {
+              id: "deposit_method",
+              label: "Deposit Method",
+              kind: "select" as const,
+              required: true,
+              options: ["Mobile deposit", "ATM deposit", "In-branch deposit", "Mail deposit"]
+            },
+            {
+              id: "memo",
+              label: "Memo (optional)",
+              kind: "text" as const,
+              placeholder: "Add a note for your records"
+            }
+          ],
+          submit_label: "Initiate Deposit"
+        };
       default:
         return null;
     }
@@ -631,7 +855,79 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction, 
 
       case "card":
         // Special handling for action buttons card
-        if (directive.id === "action-buttons" || directive.id === "doctor-action-buttons" || directive.id === "delta-action-buttons") {
+        if (directive.id === "action-buttons" || directive.id === "doctor-action-buttons" || directive.id === "delta-action-buttons" || directive.id === "bank-action-buttons") {
+          // Bank mode buttons
+          if (mode === "bank" || directive.id === "bank-action-buttons") {
+            return (
+              <div key={directive.id ?? index} className="p-6 rounded-2xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
+                <div className="space-y-5">
+                  <div>
+                    <h3 className="font-bold text-white text-2xl mb-2">{directive.title}</h3>
+                    {directive.body && (
+                      <p className="text-blue-200/70 leading-relaxed text-sm">{directive.body}</p>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <button
+                      onClick={() => handleActionClick("account-balance")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">💰</span>
+                        <span>Account Balance</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("transfer-funds")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">💸</span>
+                        <span>Transfer Funds</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("bill-pay")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">💳</span>
+                        <span>Pay Bills</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("transaction-history")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">📋</span>
+                        <span>Transaction History</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("loan-inquiry")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🏦</span>
+                        <span>Loan Inquiry</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleActionClick("deposit-check")}
+                      className="group w-full px-5 py-4 text-left text-white font-semibold rounded-xl bg-gradient-to-r from-blue-500/90 to-indigo-600/90 backdrop-blur-xl border border-white/20 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">📄</span>
+                        <span>Deposit Check</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          
           // Delta Airlines mode buttons
           if (mode === "delta" || directive.id === "delta-action-buttons") {
             return (
@@ -975,7 +1271,13 @@ export default function UiPanel({ items, onEmit, className = "", triggerAction, 
                activeForm === "book-flight" ? "✈️" :
                activeForm === "flight-check-in" ? "🎫" :
                activeForm === "flight-status" ? "🔄" :
-               activeForm === "baggage-tracking" ? "🧳" : "📋"}
+               activeForm === "baggage-tracking" ? "🧳" :
+               activeForm === "account-balance" ? "💰" :
+               activeForm === "transfer-funds" ? "💸" :
+               activeForm === "bill-pay" ? "💳" :
+               activeForm === "transaction-history" ? "📋" :
+               activeForm === "loan-inquiry" ? "🏦" :
+               activeForm === "deposit-check" ? "📄" : "📋"}
             </div>
             <h3 className="font-bold text-white text-2xl">{formData.title}</h3>
           </div>

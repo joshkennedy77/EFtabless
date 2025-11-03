@@ -147,7 +147,7 @@ export default function DeltaPage() {
     }
   };
 
-  const handleActionClick = (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | "consultation" | "prescription" | "lab-results" | "medical-history" | "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking") => {
+  const handleActionClick = (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | "consultation" | "prescription" | "lab-results" | "medical-history" | "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking" | "account-balance" | "transfer-funds" | "bill-pay" | "transaction-history" | "loan-inquiry" | "deposit-check") => {
     // Only handle delta-specific actions, ignore others
     if (action === "book-flight" || action === "flight-check-in" || action === "flight-status" || action === "baggage-tracking") {
       // Trigger the action to open the form
@@ -261,6 +261,13 @@ export default function DeltaPage() {
             aria-label="Delta Airlines Assistant"
           >
             Delta Assistant
+          </a>
+          <a 
+            href="/bank" 
+            className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+            aria-label="Bank Concierge"
+          >
+            Bank Concierge
           </a>
           <a 
             href="/info" 

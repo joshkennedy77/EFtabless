@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 
 type Props = {
   avatarId?: string;
-  mode?: "concierge" | "doctor" | "delta";
+  mode?: "concierge" | "doctor" | "delta" | "bank";
   onStart?: () => void;
   onStop?: () => void;
   onUserUtterance?: (text: string) => void;
@@ -235,6 +235,7 @@ export default function AvatarStage({
           <div className="text-base font-bold text-white drop-shadow-lg">
             {mode === "doctor" ? "Doctor's Assistant" : 
              mode === "delta" ? "Delta Airlines Assistant" : 
+             mode === "bank" ? "Bank Concierge" :
              "Hospital Concierge"}
           </div>
           <div className="text-xs text-blue-200/80 font-medium">

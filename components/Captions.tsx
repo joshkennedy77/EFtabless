@@ -6,11 +6,11 @@ import Input from "./ui/Input";
 interface CaptionsProps {
   captions: string[];
   className?: string;
-  mode?: "concierge" | "doctor" | "delta";
+  mode?: "concierge" | "doctor" | "delta" | "bank";
   onStart?: () => void;
   onStop?: () => void;
   onUserUtterance?: (text: string) => void;
-  onActionClick?: (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | "consultation" | "prescription" | "lab-results" | "medical-history" | "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking") => void;
+  onActionClick?: (action: "check-in" | "family-notifications" | "care-coordination" | "wellness-tracking" | "consultation" | "prescription" | "lab-results" | "medical-history" | "book-flight" | "flight-check-in" | "flight-status" | "baggage-tracking" | "account-balance" | "transfer-funds" | "bill-pay" | "transaction-history" | "loan-inquiry" | "deposit-check") => void;
   onEndConversation?: () => void;
 }
 
@@ -128,7 +128,46 @@ export default function Captions({ captions, className = "", mode = "concierge",
               return;
             }
           }
-          
+
+          if (mode === "bank") {
+            if (text.includes("account balance") || text.includes("balance") || text.includes("check balance") || text.includes("account balance inquiry") || text.includes("show balance")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("account-balance");
+              setInput("");
+              return;
+            }
+            if (text.includes("transfer funds") || text.includes("transfer money") || text.includes("send money") || text.includes("make a transfer") || text.includes("wire transfer")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("transfer-funds");
+              setInput("");
+              return;
+            }
+            if (text.includes("bill pay") || text.includes("pay bill") || text.includes("pay bills") || text.includes("pay a bill") || text.includes("schedule payment")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("bill-pay");
+              setInput("");
+              return;
+            }
+            if (text.includes("transaction history") || text.includes("transactions") || text.includes("history") || text.includes("recent transactions") || text.includes("statement")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("transaction-history");
+              setInput("");
+              return;
+            }
+            if (text.includes("loan") || text.includes("loan inquiry") || text.includes("apply for loan") || text.includes("loan application") || text.includes("loan status")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("loan-inquiry");
+              setInput("");
+              return;
+            }
+            if (text.includes("deposit check") || text.includes("deposit a check") || text.includes("mobile deposit") || text.includes("check deposit")) {
+              setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
+              onActionClick?.("deposit-check");
+              setInput("");
+              return;
+            }
+          }
+
           // Concierge mode voice commands (default)
           if (mode === "concierge") {
             if (text.includes("check in") || text.includes("check-in") || text.includes("hospital")) {
