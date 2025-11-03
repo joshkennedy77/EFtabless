@@ -21,11 +21,35 @@ export default function Captions({ captions, className = "", mode = "concierge",
   const recognitionRef = useRef<any>(null);
   const startedRef = useRef(false);
   const autoStartAttemptedRef = useRef(false);
+  const modeRef = useRef(mode);
+  const onUserUtteranceRef = useRef(onUserUtterance);
+  const onActionClickRef = useRef(onActionClick);
   const [started, setStarted] = useState(false);
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [micPermission, setMicPermission] = useState<"granted" | "denied" | "prompt">("prompt");
   const [userMessages, setUserMessages] = useState<Array<{ text: string; timestamp: number }>>([]);
+
+  // Listen for microphone permission granted event (from consent modal)
+  useEffect(() => {
+    const handleMicPermissionGranted = () => {
+      console.log("📢 Captions: Microphone permission granted event received");
+      setMicPermission("granted");
+    };
+    
+    const handleMicPermissionDenied = () => {
+      console.log("📢 Captions: Microphone permission denied event received");
+      setMicPermission("denied");
+    };
+    
+    window.addEventListener('microphone-permission-granted', handleMicPermissionGranted);
+    window.addEventListener('microphone-permission-denied', handleMicPermissionDenied);
+    
+    return () => {
+      window.removeEventListener('microphone-permission-granted', handleMicPermissionGranted);
+      window.removeEventListener('microphone-permission-denied', handleMicPermissionDenied);
+    };
+  }, []);
 
   // Check microphone permission status (but don't request yet - browsers require user interaction)
   useEffect(() => {
@@ -142,14 +166,19 @@ export default function Captions({ captions, className = "", mode = "concierge",
     }
   }, [onConsentAccepted]);
 
-  // Initialize Speech Recognition
+  // Initialize Speech Recognition - only once on mount
   useEffect(() => {
     if (typeof window !== "undefined" && ("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
       const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = "en-US";
+      
+      // Only initialize if not already initialized
+      if (!recognitionRef.current) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = true;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = "en-US";
+        console.log("✅ Speech recognition initialized");
+      }
 
       recognitionRef.current.onresult = (event: any) => {
         let interimTranscript = "";
@@ -177,123 +206,123 @@ export default function Captions({ captions, className = "", mode = "concierge",
           const originalText = finalTranscript.trim(); // Keep original case
           
           // Delta Airlines mode voice commands
-          if (mode === "delta") {
+          if (modeRef.current === "delta") {
             if (text.includes("book flight") || text.includes("book a flight") || text.includes("reserve flight") || text.includes("search flight") || text.includes("find flight") || text.includes("flight booking")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("book-flight");
+              onActionClickRef.current?.("book-flight");
               setInput("");
               return;
             }
             if (text.includes("check in") || text.includes("check-in") || text.includes("flight check in") || text.includes("check in for flight") || text.includes("check in for my flight")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("flight-check-in");
+              onActionClickRef.current?.("flight-check-in");
               setInput("");
               return;
             }
             if (text.includes("flight status") || text.includes("check flight status") || text.includes("where is my flight") || text.includes("flight info") || text.includes("flight information") || text.includes("status of flight")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("flight-status");
+              onActionClickRef.current?.("flight-status");
               setInput("");
               return;
             }
             if (text.includes("baggage") || text.includes("baggage tracking") || text.includes("track baggage") || text.includes("where is my bag") || text.includes("lost luggage") || text.includes("track my bag") || text.includes("luggage")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("baggage-tracking");
+              onActionClickRef.current?.("baggage-tracking");
               setInput("");
               return;
             }
           }
           
           // Doctor's Assistant mode voice commands
-          if (mode === "doctor") {
+          if (modeRef.current === "doctor") {
             if (text.includes("consultation") || text.includes("schedule consultation") || text.includes("appointment") || text.includes("see doctor") || text.includes("book appointment")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("consultation");
+              onActionClickRef.current?.("consultation");
               setInput("");
               return;
             }
             if (text.includes("prescription") || text.includes("refill") || text.includes("medication") || text.includes("prescription request") || text.includes("need prescription")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("prescription");
+              onActionClickRef.current?.("prescription");
               setInput("");
               return;
             }
             if (text.includes("lab results") || text.includes("lab test") || text.includes("test results") || text.includes("blood work") || text.includes("lab report")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("lab-results");
+              onActionClickRef.current?.("lab-results");
               setInput("");
               return;
             }
             if (text.includes("medical history") || text.includes("medical records") || text.includes("patient records") || text.includes("health records") || text.includes("medical file")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("medical-history");
+              onActionClickRef.current?.("medical-history");
               setInput("");
               return;
             }
           }
 
-          if (mode === "bank") {
+          if (modeRef.current === "bank") {
             if (text.includes("account balance") || text.includes("balance") || text.includes("check balance") || text.includes("account balance inquiry") || text.includes("show balance")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("account-balance");
+              onActionClickRef.current?.("account-balance");
               setInput("");
               return;
             }
             if (text.includes("transfer funds") || text.includes("transfer money") || text.includes("send money") || text.includes("make a transfer") || text.includes("wire transfer")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("transfer-funds");
+              onActionClickRef.current?.("transfer-funds");
               setInput("");
               return;
             }
             if (text.includes("bill pay") || text.includes("pay bill") || text.includes("pay bills") || text.includes("pay a bill") || text.includes("schedule payment")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("bill-pay");
+              onActionClickRef.current?.("bill-pay");
               setInput("");
               return;
             }
             if (text.includes("transaction history") || text.includes("transactions") || text.includes("history") || text.includes("recent transactions") || text.includes("statement")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("transaction-history");
+              onActionClickRef.current?.("transaction-history");
               setInput("");
               return;
             }
             if (text.includes("loan") || text.includes("loan inquiry") || text.includes("apply for loan") || text.includes("loan application") || text.includes("loan status")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("loan-inquiry");
+              onActionClickRef.current?.("loan-inquiry");
               setInput("");
               return;
             }
             if (text.includes("deposit check") || text.includes("deposit a check") || text.includes("mobile deposit") || text.includes("check deposit")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("deposit-check");
+              onActionClickRef.current?.("deposit-check");
               setInput("");
               return;
             }
           }
 
           // Concierge mode voice commands (default)
-          if (mode === "concierge") {
+          if (modeRef.current === "concierge") {
             if (text.includes("check in") || text.includes("check-in") || text.includes("hospital")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("check-in");
+              onActionClickRef.current?.("check-in");
               setInput("");
               return;
             }
             if (text.includes("family notification") || text.includes("family notifications") || text.includes("notify family")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("family-notifications");
+              onActionClickRef.current?.("family-notifications");
               setInput("");
               return;
             }
             if (text.includes("care coordination") || text.includes("care coordination") || text.includes("caregiver")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("care-coordination");
+              onActionClickRef.current?.("care-coordination");
               setInput("");
               return;
             }
             if (text.includes("wellness") || text.includes("wellness tracking") || text.includes("wellness check") || text.includes("analytics")) {
               setUserMessages(prev => [...prev, { text: originalText, timestamp: Date.now() }]);
-              onActionClick?.("wellness-tracking");
+              onActionClickRef.current?.("wellness-tracking");
               setInput("");
               return;
             }
@@ -304,7 +333,7 @@ export default function Captions({ captions, className = "", mode = "concierge",
           setInput(finalText);
           // Add user message to captions
           setUserMessages(prev => [...prev, { text: finalText, timestamp: Date.now() }]);
-          onUserUtterance?.(finalText);
+          onUserUtteranceRef.current?.(finalText);
           setInput("");
         }
       };
@@ -312,35 +341,74 @@ export default function Captions({ captions, className = "", mode = "concierge",
       recognitionRef.current.onerror = (event: any) => {
         console.error("Speech recognition error:", event.error);
         if (event.error === "not-allowed") {
+          console.error("❌ Microphone permission denied by browser");
           setMicPermission("denied");
-        }
-        setIsListening(false);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-        // Restart if still started - use ref to get current value
-        if (startedRef.current && recognitionRef.current) {
-          try {
-            recognitionRef.current.start();
-            setIsListening(true);
-          } catch (e) {
-            // Recognition already started or error
+          setIsListening(false);
+        } else if (event.error === "no-speech") {
+          // This is normal - just no speech detected, keep listening
+          console.log("ℹ️ No speech detected (continuing to listen)");
+          // Don't set isListening to false - keep listening
+        } else if (event.error === "aborted") {
+          // Recognition was stopped intentionally
+          console.log("ℹ️ Recognition aborted");
+        } else if (event.error === "audio-capture") {
+          console.error("❌ No microphone found or audio capture failed");
+          setIsListening(false);
+        } else if (event.error === "network") {
+          console.error("❌ Network error in speech recognition");
+          setIsListening(false);
+        } else {
+          console.warn("⚠️ Speech recognition error:", event.error);
+          // For other errors, try to keep listening unless it's critical
+          if (event.error !== "service-not-allowed") {
+            // Don't stop listening for minor errors
           }
         }
       };
-    }
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, [started, onUserUtterance, onActionClick, mode]);
 
-  // Sync startedRef with started state
+      recognitionRef.current.onstart = () => {
+        console.log("🎤 Speech recognition started");
+        setIsListening(true);
+      };
+
+      recognitionRef.current.onend = () => {
+        console.log("⏹️ Speech recognition ended");
+        setIsListening(false);
+        // Restart if still started - use ref to get current value
+        if (startedRef.current && recognitionRef.current) {
+          // Add small delay to prevent rapid restarts
+          setTimeout(() => {
+            if (startedRef.current && recognitionRef.current) {
+              try {
+                console.log("🔄 Restarting speech recognition...");
+                recognitionRef.current.start();
+              } catch (e: any) {
+                // Recognition already started or error
+                if (e.name !== 'aborted' && e.name !== 'invalid-state') {
+                  console.log("⚠️ Recognition restart skipped:", e.name);
+                }
+              }
+            }
+          }, 200);
+        }
+      };
+    }
+    // Don't clean up on unmount - let it persist
+    return () => {
+      // Cleanup only on component unmount
+    };
+  }, []); // Empty deps - only initialize once
+
+  // Sync refs with current props
   useEffect(() => {
     startedRef.current = started;
   }, [started]);
+
+  useEffect(() => {
+    modeRef.current = mode;
+    onUserUtteranceRef.current = onUserUtterance;
+    onActionClickRef.current = onActionClick;
+  }, [mode, onUserUtterance, onActionClick]);
 
   // Auto-start speech recognition when permission is granted and consent is accepted
   // This effect watches for when micPermission becomes "granted"
@@ -585,7 +653,7 @@ export default function Captions({ captions, className = "", mode = "concierge",
     const messageText = input.trim();
     // Add user message to captions
     setUserMessages(prev => [...prev, { text: messageText, timestamp: Date.now() }]);
-    onUserUtterance?.(messageText);
+              currentOnUserUtterance?.(messageText);
     setInput("");
     inputRef.current?.focus();
   };

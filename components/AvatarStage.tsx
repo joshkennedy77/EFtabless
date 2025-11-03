@@ -92,17 +92,43 @@ export default function AvatarStage({
     
     window.addEventListener('microphone-permission-granted', handleMicPermissionGranted);
     
-    // Also check permission status on mount
+    // Also check permission status on mount (handles cases where permission was granted previously)
     const checkPermission = async () => {
       try {
-        const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-        if (result.state === 'granted') {
-          setMicPermissionGranted(true);
+        // First try Permissions API
+        if (navigator.permissions && navigator.permissions.query) {
+          try {
+            const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+            if (result.state === 'granted') {
+              console.log("✅ AvatarStage: Microphone permission already granted (from Permissions API)");
+              setMicPermissionGranted(true);
+              return;
+            }
+          } catch (permError) {
+            // Permissions API not supported or failed
+          }
         }
-      } catch (e) {
-        // Permission API not supported
+        
+        // Fallback: Try getUserMedia to detect if permission is actually granted
+        // This won't prompt if permission was previously denied, but will succeed if granted
+        try {
+          const testStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          testStream.getTracks().forEach(track => track.stop());
+          console.log("✅ AvatarStage: Microphone permission already granted (from getUserMedia test)");
+          setMicPermissionGranted(true);
+        } catch (mediaError: any) {
+          if (mediaError.name === "NotAllowedError" || mediaError.name === "PermissionDeniedError") {
+            console.log("⏸️ AvatarStage: Microphone permission denied or not granted");
+            // Permission not granted - will wait for user to click Accept & Continue
+          } else {
+            console.log("ℹ️ AvatarStage: Microphone permission check inconclusive");
+          }
+        }
+      } catch (error) {
+        console.log("⚠️ AvatarStage: Permission check error:", error);
       }
     };
+    
     checkPermission();
     
     return () => {
@@ -117,6 +143,13 @@ export default function AvatarStage({
       const consent = localStorage.getItem("everfriends-consent");
       if (consent !== "accepted") {
         console.log("⏳ Avatar: Waiting for consent before loading...");
+        return;
+      }
+      
+      // CRITICAL: Wait for microphone permission before loading Daily.co iframe
+      // Daily.co requires mic permission to join, otherwise it shows "No microphone found"
+      if (!micPermissionGranted) {
+        console.log("⏳ Avatar: Waiting for microphone permission before loading...");
         return;
       }
       
@@ -202,11 +235,11 @@ export default function AvatarStage({
     
     window.addEventListener('storage', handleStorageChange);
     
-    // Also poll for consent (same-tab updates)
+    // Also poll for consent AND mic permission (same-tab updates)
     const consentCheckInterval = setInterval(() => {
       const consent = localStorage.getItem("everfriends-consent");
-      if (consent === "accepted" && !tavusStreamUrl && !isLoading && !error) {
-        console.log("📢 Avatar: Consent detected, loading avatar...");
+      if (consent === "accepted" && micPermissionGranted && !tavusStreamUrl && !isLoading && !error) {
+        console.log("📢 Avatar: Consent and mic permission detected, loading avatar...");
         initializeTavus();
       }
     }, 1000);

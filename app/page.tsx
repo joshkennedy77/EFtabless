@@ -70,17 +70,43 @@ export default function ConciergePage() {
         ]);
     
     // Request microphone permission now (within user interaction context from button click)
+    // This MUST happen here because browsers require user interaction to request mic permission
+    // Even if permission was previously granted, we request it again to ensure it's active
     try {
       console.log("🎤 Requesting microphone permission (user clicked Accept)...");
+      
+      // Always request permission - even if it was previously granted
+      // This ensures the permission is fresh and active, and handles cases where
+      // browser cache/cookies might have stale permission states
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(track => track.stop());
-      console.log("✅ Microphone permission granted after consent");
+      // Keep the stream active briefly to ensure permission is properly set
+      console.log("✅ Microphone permission granted! Stream active.");
+      
+      // IMPORTANT: Dispatch event BEFORE stopping the stream
+      // This ensures AvatarStage knows permission is granted before it tries to load
       window.dispatchEvent(new CustomEvent('microphone-permission-granted'));
+      
+      // Stop the stream after a brief delay to ensure permission is fully registered
+      setTimeout(() => {
+        stream.getTracks().forEach(track => track.stop());
+        console.log("✅ Microphone stream stopped (permission retained)");
+      }, 500);
+      
     } catch (error: any) {
-      console.log("⚠️ Microphone permission not granted:", error);
+      console.error("❌ Microphone permission request failed:", error);
+      let errorMessage = "Microphone access is required for voice interaction.";
+      
       if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        errorMessage = "Microphone permission was denied. Please allow microphone access in your browser settings and refresh the page. You may need to clear your browser cache and cookies if you previously denied permission.";
         window.dispatchEvent(new CustomEvent('microphone-permission-denied'));
+      } else if (error.name === "NotFoundError") {
+        errorMessage = "No microphone found. Please connect a microphone and refresh the page.";
+      } else {
+        errorMessage = `Unable to access microphone: ${error.message || error.name}. Try clearing your browser cache and cookies if you're having persistent issues.`;
       }
+      
+      alert(errorMessage);
+      setCaptions((prev) => [...prev, `⚠️ ${errorMessage}`]);
     }
   };
 
