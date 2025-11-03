@@ -412,13 +412,28 @@ export default function Captions({ captions, className = "", mode = "concierge",
       autoStartAttemptedRef.current = true;
       
       try {
-        // Verify we have permission
+        // Verify we have permission - but continue even if no mic is found
         console.log("🔍 Verifying microphone permission...");
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
-        console.log("✅ Microphone permission verified");
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(track => track.stop());
+          console.log("✅ Microphone permission verified");
+        } catch (micCheckError: any) {
+          // If no microphone found, continue anyway - user can connect one later
+          if (micCheckError.name === "NotFoundError") {
+            console.warn("⚠️ No microphone device found, but continuing anyway");
+            // Don't fail - user might connect mic later
+          } else if (micCheckError.name === "NotAllowedError" || micCheckError.name === "PermissionDeniedError") {
+            console.error("❌ Microphone permission denied");
+            setMicPermission("denied");
+            autoStartAttemptedRef.current = false;
+            return;
+          } else {
+            console.warn("⚠️ Microphone check failed, but continuing:", micCheckError.name);
+          }
+        }
         
-        // Start recognition
+        // Start recognition - this will work even without a mic (it just won't detect audio)
         startedRef.current = true;
         setStarted(true);
         onStart?.();
@@ -437,13 +452,31 @@ export default function Captions({ captions, className = "", mode = "concierge",
           }
         }
       } catch (error: any) {
-        console.error("❌ Auto-start microphone access failed:", error);
+        console.error("❌ Auto-start failed:", error);
+        // Only mark as denied if permission was explicitly denied, not if device not found
         if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
           setMicPermission("denied");
+          autoStartAttemptedRef.current = false;
+        } else {
+          // For other errors (like NotFoundError), still try to start recognition
+          // The recognition API will handle the missing mic gracefully
+          console.log("⚠️ Continuing despite error - recognition may work once mic is connected");
+          try {
+            startedRef.current = true;
+            setStarted(true);
+            onStart?.();
+            if (recognitionRef.current) {
+              recognitionRef.current.start();
+              setIsListening(true);
+              console.log("✅ Started recognition despite mic check failure");
+            }
+          } catch (e: any) {
+            console.error("❌ Failed to start recognition:", e);
+            startedRef.current = false;
+            setStarted(false);
+            autoStartAttemptedRef.current = false;
+          }
         }
-        startedRef.current = false;
-        setStarted(false);
-        autoStartAttemptedRef.current = false; // Allow retry via button
       }
     };
 
@@ -479,13 +512,30 @@ export default function Captions({ captions, className = "", mode = "concierge",
     try {
       // ALWAYS request microphone permission when user clicks start
       console.log("🎤 Requesting microphone permission (user clicked Start)...");
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(track => track.stop());
-      console.log("✅ Microphone permission granted via getUserMedia");
-      setMicPermission("granted");
-      
-      // Dispatch event to update other components
-      window.dispatchEvent(new CustomEvent('microphone-permission-granted'));
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        console.log("✅ Microphone permission granted via getUserMedia");
+        setMicPermission("granted");
+        window.dispatchEvent(new CustomEvent('microphone-permission-granted'));
+      } catch (micError: any) {
+        // Handle different error types gracefully
+        if (micError.name === "NotAllowedError" || micError.name === "PermissionDeniedError") {
+          console.error("❌ Microphone permission denied");
+          setMicPermission("denied");
+          window.dispatchEvent(new CustomEvent('microphone-permission-denied'));
+          alert("Microphone access was denied. Please allow microphone access in your browser settings and try again.");
+          return;
+        } else if (micError.name === "NotFoundError") {
+          console.warn("⚠️ No microphone device found, but continuing anyway");
+          // Set permission to granted so recognition can start (it will just not detect audio until mic is connected)
+          setMicPermission("granted");
+          // Don't show alert - user can connect mic later and it will work
+        } else {
+          console.warn("⚠️ Microphone access issue, but continuing:", micError.name);
+          setMicPermission("granted"); // Continue anyway
+        }
+      }
       
       // Small delay to ensure state updates
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -507,16 +557,9 @@ export default function Captions({ captions, className = "", mode = "concierge",
         }
       }
     } catch (error: any) {
-      console.error("❌ Failed to get microphone access:", error);
-      setMicPermission("denied");
-      window.dispatchEvent(new CustomEvent('microphone-permission-denied'));
-      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-        alert("Microphone access was denied. Please allow microphone access in your browser settings and try again.");
-      } else if (error.name === "NotFoundError") {
-        alert("No microphone found. Please connect a microphone and try again.");
-      } else {
-        alert(`Failed to access microphone: ${error.message || error.name || 'Unknown error'}`);
-      }
+      console.error("❌ Failed to start:", error);
+      // This shouldn't happen, but handle it gracefully
+      alert(`Failed to start voice recognition: ${error.message || error.name || 'Unknown error'}`);
     }
   };
 

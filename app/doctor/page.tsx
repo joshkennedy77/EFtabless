@@ -258,9 +258,9 @@ export default function DoctorPage() {
           <a 
             href="/" 
             className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
-            aria-label="Concierge"
+            aria-label="Trinity Health"
           >
-            Concierge
+            Trinity Health
           </a>
           <a 
             href="/doctor" 

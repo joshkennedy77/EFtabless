@@ -1,7 +1,8 @@
 {
   "/delta/page": "app/delta/page.js",
-  "/api/events/route": "app/api/events/route.js",
   "/bank/page": "app/bank/page.js",
+  "/doctor/page": "app/doctor/page.js",
+  "/page": "app/page.js",
   "/api/tavus/route": "app/api/tavus/route.js",
-  "/page": "app/page.js"
+  "/api/events/route": "app/api/events/route.js"
 }

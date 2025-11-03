@@ -18,7 +18,7 @@ const DEFAULT_ACTION_BUTTONS: UiDirective = {
 export default function ConciergePage() {
   const [directives, setDirectives] = useState<UiDirective[]>([DEFAULT_ACTION_BUTTONS]);
   const [captions, setCaptions] = useState<string[]>([
-    "Welcome! I'm your Hospital Concierge.",
+    "Welcome! I'm your Trinity Health Assistant.",
     "You can interact with me using voice or by clicking the buttons below."
   ]);
   const [consentModalOpen, setConsentModalOpen] = useState(false);
@@ -40,7 +40,7 @@ export default function ConciergePage() {
       // Ensure action buttons are shown (they're already in initial state)
       setDirectives([DEFAULT_ACTION_BUTTONS]);
       setCaptions([
-        "Welcome! I'm your Hospital Concierge.",
+        "Welcome! I'm your Trinity Health Assistant.",
         "You can interact with me using voice or by clicking the buttons below."
       ]);
     } else if (consent === "declined") {
@@ -51,7 +51,7 @@ export default function ConciergePage() {
       // They'll be fully functional once consent is accepted
       setDirectives([DEFAULT_ACTION_BUTTONS]);
       setCaptions([
-        "Welcome! I'm your Hospital Concierge.",
+        "Welcome! I'm your Trinity Health Assistant.",
         "Please accept the terms to interact with me using voice or buttons."
       ]);
     }
@@ -63,7 +63,7 @@ export default function ConciergePage() {
     // Ensure action buttons are shown
     setDirectives([DEFAULT_ACTION_BUTTONS]);
     setCaptions([
-      "Welcome! I'm your Hospital Concierge.",
+      "Welcome! I'm your Trinity Health Assistant.",
       "You can interact with me using voice or by clicking the buttons below."
     ]);
   };
@@ -138,7 +138,7 @@ export default function ConciergePage() {
       // Keep action buttons for accessibility - always show them
       setDirectives([DEFAULT_ACTION_BUTTONS]);
       setCaptions([
-        "Welcome! I'm your Hospital Concierge.",
+        "Welcome! I'm your Trinity Health Assistant.",
         "You can interact with me using voice or by clicking the buttons below."
       ]);
       // Note: User messages are cleared in Captions component when captions are cleared
@@ -216,7 +216,7 @@ export default function ConciergePage() {
           </div>
           <div>
             <h1 className="font-bold text-white text-xl tracking-tight">EverFriends</h1>
-            <p className="text-sm text-blue-200/80">AI Concierge • Powered by Human+</p>
+            <p className="text-sm text-blue-200/80">Trinity Health • Powered by Human+</p>
           </div>
         </div>
         <nav className="text-sm text-blue-200 flex gap-6">

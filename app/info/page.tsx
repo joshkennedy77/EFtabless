@@ -27,9 +27,9 @@ export default function Page() {
           <Link 
             href="/" 
             className="hover:text-gray-900 transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-gray-100"
-            aria-label="Concierge"
+            aria-label="Trinity Health"
           >
-            Concierge
+            Trinity Health
           </Link>
           <Link 
             href="/doctor" 
@@ -194,7 +194,7 @@ export default function Page() {
         <div className="text-center mt-12">
           <Link href="/">
             <Button size="lg" className="px-8 py-4">
-              Back to Concierge
+              Back to Trinity Health
             </Button>
           </Link>
         </div>

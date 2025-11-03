@@ -19,7 +19,7 @@ const DEFAULT_ACTION_BUTTONS: UiDirective = {
 export default function ConciergePage() {
   const [directives, setDirectives] = useState<UiDirective[]>([DEFAULT_ACTION_BUTTONS]);
   const [captions, setCaptions] = useState<string[]>([
-    "Welcome! I'm your Hospital Concierge.",
+    "Welcome! I'm your Trinity Health Assistant.",
     "You can interact with me using voice or by clicking the buttons below."
   ]);
   const [consentModalOpen, setConsentModalOpen] = useState(false);
@@ -41,10 +41,10 @@ export default function ConciergePage() {
       setHasConsented(true);
       // Ensure action buttons are shown (they're already in initial state)
       setDirectives([DEFAULT_ACTION_BUTTONS]);
-      setCaptions([
-        "Welcome! I'm your Hospital Concierge.",
-        "You can interact with me using voice or by clicking the buttons below."
-      ]);
+        setCaptions([
+          "Welcome! I'm your Trinity Health Assistant.",
+          "You can interact with me using voice or by clicking the buttons below."
+        ]);
     } else if (consent === "declined") {
       setHasConsented(false);
     } else {
@@ -53,7 +53,7 @@ export default function ConciergePage() {
       // They'll be fully functional once consent is accepted
       setDirectives([DEFAULT_ACTION_BUTTONS]);
       setCaptions([
-        "Welcome! I'm your Hospital Concierge.",
+        "Welcome! I'm your Trinity Health Assistant.",
         "Please accept the terms to interact with me using voice or buttons."
       ]);
     }
@@ -64,10 +64,10 @@ export default function ConciergePage() {
     setConsentModalOpen(false);
     // Ensure action buttons are shown
     setDirectives([DEFAULT_ACTION_BUTTONS]);
-    setCaptions([
-      "Welcome! I'm your Hospital Concierge.",
-      "You can interact with me using voice or by clicking the buttons below."
-    ]);
+        setCaptions([
+          "Welcome! I'm your Trinity Health Assistant.",
+          "You can interact with me using voice or by clicking the buttons below."
+        ]);
     
     // Request microphone permission now (within user interaction context from button click)
     try {
@@ -153,10 +153,10 @@ export default function ConciergePage() {
       resetMockServer();
       // Keep action buttons for accessibility - always show them
       setDirectives([DEFAULT_ACTION_BUTTONS]);
-      setCaptions([
-        "Welcome! I'm your Hospital Concierge.",
-        "You can interact with me using voice or by clicking the buttons below."
-      ]);
+        setCaptions([
+          "Welcome! I'm your Trinity Health Assistant.",
+          "You can interact with me using voice or by clicking the buttons below."
+        ]);
       // Note: User messages are cleared in Captions component when captions are cleared
     }
   };
@@ -241,26 +241,26 @@ export default function ConciergePage() {
       <header className="relative z-10 p-6 flex items-center justify-between bg-white/5 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-4">
           <Image 
-            src="/logo.png" 
-            alt="EverFriends Logo" 
-            width={48}
-            height={48}
+            src="/trinity.png" 
+            alt="Trinity Health Logo" 
+            width={100}
+            height={100}
             className="rounded-2xl"
             priority
             unoptimized
           />
           <div>
             <h1 className="font-bold text-white text-xl tracking-tight">EverFriends</h1>
-            <p className="text-sm text-blue-200/80">AI Concierge • Powered by Human+</p>
+            <p className="text-sm text-blue-200/80">Trinity Health • Powered by Human+</p>
           </div>
         </div>
         <nav className="text-sm text-blue-200 flex gap-4 flex-wrap items-center">
           <a 
             href="/" 
             className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
-            aria-label="Concierge"
+            aria-label="Trinity Health"
           >
-            Concierge
+            Trinity Health
           </a>
           <a 
             href="/doctor" 

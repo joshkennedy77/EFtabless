@@ -299,7 +299,7 @@ export default function AvatarStage({
             {mode === "doctor" ? "Doctor's Assistant" : 
              mode === "delta" ? "Delta Airlines Assistant" : 
              mode === "bank" ? "Bank Concierge" :
-             "Hospital Concierge"}
+             "Trinity Health"}
           </div>
           <div className="text-xs text-blue-200/80 font-medium">
             {isLoading ? "Connecting..." : error ? "Connection Error" : "Ready to start conversation"}
