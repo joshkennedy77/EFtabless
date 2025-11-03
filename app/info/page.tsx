@@ -46,6 +46,13 @@ export default function Page() {
             Delta Assistant
           </Link>
           <Link 
+            href="/bank" 
+            className="hover:text-gray-900 transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-gray-100"
+            aria-label="Bank Concierge"
+          >
+            Bank Concierge
+          </Link>
+          <Link 
             href="/info" 
             className="hover:text-gray-900 transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-gray-100"
             aria-label="Learn about EverFriends"
