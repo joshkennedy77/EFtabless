@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import AvatarStage from "@/components/AvatarStage";
 import UiPanel from "@/components/UiPanel";
 import Captions from "@/components/Captions";
@@ -173,28 +175,94 @@ export default function ConciergePage() {
 
   if (hasConsented === false) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden flex items-center justify-center">
+      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
         </div>
-        <div className="relative z-10 text-center max-w-md mx-auto p-8">
-          <div className="w-24 h-24 mx-auto mb-6 bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl flex items-center justify-center text-5xl shadow-xl">
-            🚫
+
+        {/* Header */}
+        <header className="relative z-10 p-6 flex items-center justify-between bg-white/5 backdrop-blur-xl border-b border-white/10">
+          <Link href="/" className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity">
+            <Image 
+              src="/logo.png" 
+              alt="EverFriends Logo" 
+              width={48}
+              height={48}
+              className="rounded-2xl"
+              priority
+              unoptimized
+            />
+            <div>
+              <h1 className="font-bold text-white text-xl tracking-tight">EverFriends Concierge</h1>
+              <p className="text-sm text-blue-200/80">Powered by Human+ Lab</p>
+            </div>
+          </Link>
+          <nav className="text-sm text-blue-200 flex gap-4 flex-wrap items-center">
+            <a 
+              href="/concierge" 
+              className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+              aria-label="Trinity Health"
+            >
+              Trinity Health
+            </a>
+            <a 
+              href="/doctor" 
+              className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+              aria-label="Doctor's Assistant"
+            >
+              Doctor's Assistant
+            </a>
+            <a 
+              href="/delta" 
+              className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+              aria-label="Delta Airlines Assistant"
+            >
+              Delta Assistant
+            </a>
+            <a 
+              href="/bank" 
+              className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+              aria-label="Bank Concierge"
+            >
+              Bank Concierge
+            </a>
+            <a 
+              href="/" 
+              className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+              aria-label="Learn about EverFriends"
+            >
+              Learn More
+            </a>
+            <button 
+              onClick={() => setConsentModalOpen(true)}
+              className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+              aria-label="Privacy settings"
+            >
+              Privacy
+            </button>
+          </nav>
+        </header>
+
+        <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-100px)]">
+          <div className="text-center max-w-md mx-auto p-8">
+            <div className="w-24 h-24 mx-auto mb-6 bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-2xl flex items-center justify-center text-5xl shadow-xl">
+              🚫
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-4">
+              Consent Required
+            </h1>
+            <p className="text-blue-200/80 mb-8 text-lg">
+              To use EverFriends, please accept our terms and enable microphone access.
+            </p>
+            <button
+              onClick={() => setConsentModalOpen(true)}
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-2xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 shadow-xl shadow-blue-500/40 transform hover:scale-105"
+            >
+              Review Terms & Try Again
+            </button>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-4">
-            Consent Required
-          </h1>
-          <p className="text-blue-200/80 mb-8 text-lg">
-            To use EverFriends, please accept our terms and enable microphone access.
-          </p>
-          <button
-            onClick={() => setConsentModalOpen(true)}
-            className="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-2xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 shadow-xl shadow-blue-500/40 transform hover:scale-105"
-          >
-            Review Terms & Try Again
-          </button>
         </div>
       </main>
     );
@@ -210,26 +278,60 @@ export default function ConciergePage() {
 
       {/* Header */}
       <header className="relative z-10 p-6 flex items-center justify-between bg-white/5 backdrop-blur-xl border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30">
-            E
-          </div>
+        <Link href="/" className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity">
+          <Image 
+            src="/logo.png" 
+            alt="EverFriends Logo" 
+            width={48}
+            height={48}
+            className="rounded-2xl"
+            priority
+            unoptimized
+          />
           <div>
             <h1 className="font-bold text-white text-xl tracking-tight">EverFriends</h1>
             <p className="text-sm text-blue-200/80">Trinity Health • Powered by Human+</p>
           </div>
-        </div>
-        <nav className="text-sm text-blue-200 flex gap-6">
+        </Link>
+        <nav className="text-sm text-blue-200 flex gap-4 flex-wrap items-center">
+          <a 
+            href="/concierge" 
+            className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+            aria-label="Trinity Health"
+          >
+            Trinity Health
+          </a>
+          <a 
+            href="/doctor" 
+            className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+            aria-label="Doctor's Assistant"
+          >
+            Doctor's Assistant
+          </a>
+          <a 
+            href="/delta" 
+            className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+            aria-label="Delta Airlines Assistant"
+          >
+            Delta Assistant
+          </a>
+          <a 
+            href="/bank" 
+            className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+            aria-label="Bank Concierge"
+          >
+            Bank Concierge
+          </a>
           <a 
             href="/" 
-            className="hover:text-white transition-colors duration-200 font-medium"
-            aria-label="Back to home"
+            className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
+            aria-label="Learn about EverFriends"
           >
-            ← Home
+            Learn More
           </a>
           <button 
             onClick={() => setConsentModalOpen(true)}
-            className="hover:text-white transition-colors duration-200 font-medium"
+            className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
             aria-label="Privacy settings"
           >
             Privacy
@@ -275,17 +377,6 @@ export default function ConciergePage() {
         onDecline={handleConsentDecline}
       />
 
-      {/* Footer */}
-      <footer className="relative z-10 mt-16 py-8 text-center text-sm text-blue-200/60 border-t border-white/5">
-        <p>
-          EverFriends MVP - Built with Next.js, TypeScript, and Tailwind CSS
-        </p>
-        {sessionId && (
-          <p className="mt-1 text-blue-300/50">
-            Session ID: {sessionId}
-          </p>
-        )}
-      </footer>
     </main>
   );
 }

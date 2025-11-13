@@ -8,7 +8,7 @@ export default function Page() {
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       {/* Header */}
       <header className="p-6 flex items-center justify-between bg-white/80 backdrop-blur-sm border-b border-gray-200">
-        <Link href="/" className="flex items-center gap-4">
+        <Link href="/" className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity">
           <Image 
             src="/logo.png" 
             alt="EverFriends Logo" 
@@ -19,8 +19,8 @@ export default function Page() {
             unoptimized
           />
           <div>
-            <h1 className="font-bold text-gray-900 text-xl tracking-tight">EverFriends</h1>
-            <p className="text-sm text-gray-600">Learn More • Powered by Human+</p>
+            <h1 className="font-bold text-gray-900 text-xl tracking-tight">EverFriends Concierge</h1>
+            <p className="text-sm text-gray-600">Powered by Human+ Lab</p>
           </div>
         </Link>
         <nav className="text-sm text-gray-600 flex gap-4 flex-wrap items-center">
@@ -200,12 +200,6 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-16 py-8 text-center text-sm text-gray-500 border-t border-gray-200 bg-white/50">
-        <p>
-          EverFriends MVP - Built with Next.js, TypeScript, and Tailwind CSS
-        </p>
-      </footer>
     </main>
   );
 }

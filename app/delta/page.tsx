@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import AvatarStage from "@/components/AvatarStage";
 import UiPanel from "@/components/UiPanel";
@@ -239,7 +240,7 @@ export default function DeltaPage() {
 
       {/* Header */}
       <header className="relative z-10 p-6 flex items-center justify-between bg-white/5 backdrop-blur-xl border-b border-white/10">
-        <div className="flex items-center gap-4">
+        <Link href="/" className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity">
           <Image 
             src="/logo.png" 
             alt="EverFriends Logo" 
@@ -250,10 +251,10 @@ export default function DeltaPage() {
             unoptimized
           />
           <div>
-            <h1 className="font-bold text-white text-xl tracking-tight">EverFriends</h1>
-            <p className="text-sm text-blue-200/80">Delta Airlines Assistant • Powered by Human+</p>
+            <h1 className="font-bold text-white text-xl tracking-tight">EverFriends Concierge</h1>
+            <p className="text-sm text-blue-200/80">Powered by Human+ Lab</p>
           </div>
-        </div>
+        </Link>
         <nav className="text-sm text-blue-200 flex gap-4 flex-wrap items-center">
           <a 
             href="/" 
@@ -359,17 +360,6 @@ export default function DeltaPage() {
         onDecline={handleConsentDecline}
       />
 
-      {/* Footer */}
-      <footer className="relative z-10 mt-16 py-8 text-center text-sm text-blue-200/60 border-t border-white/5">
-        <p>
-          EverFriends MVP - Delta Airlines Assistant • Built with Next.js, TypeScript, and Tailwind CSS
-        </p>
-        {sessionId && (
-          <p className="mt-1 text-blue-300/50">
-            Session ID: {sessionId}
-          </p>
-        )}
-      </footer>
     </main>
   );
 }
