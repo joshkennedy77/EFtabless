@@ -203,9 +203,9 @@ export default function ConciergePage() {
             <a 
               href="/concierge" 
               className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
-              aria-label="Trinity Health"
+              aria-label="MyChart"
             >
-              Trinity Health
+              MyChart
             </a>
             <a 
               href="/doctor" 
@@ -289,17 +289,17 @@ export default function ConciergePage() {
             unoptimized
           />
           <div>
-            <h1 className="font-bold text-white text-xl tracking-tight">EverFriends</h1>
-            <p className="text-sm text-blue-200/80">Trinity Health • Powered by Human+</p>
+            <h1 className="font-bold text-white text-xl tracking-tight">EverFriends Concierge</h1>
+            <p className="text-sm text-blue-200/80">Powered by Human+ Lab</p>
           </div>
         </Link>
         <nav className="text-sm text-blue-200 flex gap-4 flex-wrap items-center">
           <a 
             href="/concierge" 
             className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
-            aria-label="Trinity Health"
+            aria-label="MyChart"
           >
-            Trinity Health
+            MyChart
           </a>
           <a 
             href="/doctor" 

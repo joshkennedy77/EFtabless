@@ -257,11 +257,11 @@ export default function DoctorPage() {
         </Link>
         <nav className="text-sm text-blue-200 flex gap-4 flex-wrap items-center">
           <a 
-            href="/" 
+            href="/concierge" 
             className="hover:text-white transition-colors duration-200 font-medium px-2 py-1 rounded hover:bg-white/10"
-            aria-label="Trinity Health"
+            aria-label="MyChart"
           >
-            Trinity Health
+            MyChart
           </a>
           <a 
             href="/doctor" 
