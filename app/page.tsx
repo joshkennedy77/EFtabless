@@ -62,143 +62,155 @@ export default function Page() {
         </nav>
       </header>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Learn About EverFriends
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-20 max-w-6xl">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Your AI-Powered Wellness
+            <br />
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Assistant
+            </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Your AI-powered wellness and care coordination assistant, designed to keep you and your family connected and safe.
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
+            EverFriends Concierge keeps you and your family connected and safe with intelligent care coordination and wellness tracking.
           </p>
+          <div className="flex justify-center items-center">
+            <Link href="/concierge">
+              <Button size="lg" className="px-8 py-4 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all">
+                Get Started with MyChart
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <Card className="p-8">
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+          <Card className="p-6 hover:shadow-xl transition-shadow">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl shadow-lg">
                 🤖
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                AI-Powered Assistant
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">
+                AI-Powered
               </h2>
-              <p className="text-gray-600">
-                Our photoreal digital human provides natural, conversational interactions 
-                that feel personal and engaging.
+              <p className="text-gray-600 text-sm">
+                Photoreal digital human provides natural, conversational interactions
               </p>
             </div>
           </Card>
 
-          <Card className="p-8">
+          <Card className="p-6 hover:shadow-xl transition-shadow">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl shadow-lg">
                 💬
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">
                 Smart Conversations
               </h2>
-              <p className="text-gray-600">
-                Advanced state machine ensures meaningful dialogue flow, 
-                understanding context and providing relevant responses.
+              <p className="text-gray-600 text-sm">
+                Advanced state machine ensures meaningful dialogue flow
               </p>
             </div>
           </Card>
 
-          <Card className="p-8">
+          <Card className="p-6 hover:shadow-xl transition-shadow">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white text-2xl">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white text-2xl shadow-lg">
                 🎯
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                Dynamic UI Cards
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">
+                Dynamic UI
               </h2>
-              <p className="text-gray-600">
-                JSON-driven interface adapts to conversation context, 
-                showing forms, cards, and interactive elements as needed.
+              <p className="text-gray-600 text-sm">
+                JSON-driven interface adapts to conversation context
               </p>
             </div>
           </Card>
 
-          <Card className="p-8">
+          <Card className="p-6 hover:shadow-xl transition-shadow">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white text-2xl">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white text-2xl shadow-lg">
                 🔒
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 mb-3">
                 Privacy First
               </h2>
-              <p className="text-gray-600">
-                Your conversations are encrypted and never shared without 
-                explicit consent. Full control over your data.
+              <p className="text-gray-600 text-sm">
+                Encrypted conversations with full control over your data
               </p>
             </div>
           </Card>
         </div>
 
-        <div className="bg-white rounded-2xl p-8 shadow-lg">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+        {/* How It Works Section */}
+        <div className="bg-white rounded-3xl p-10 md:p-12 shadow-xl mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-10 text-center">
             How It Works
           </h2>
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-lg">
                 1
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Start a Conversation</h3>
                 <p className="text-gray-600">
-                  Click "Start Conversation" to begin interacting with your AI concierge. 
-                  Grant microphone permission for voice interaction.
+                  Begin interacting with your AI concierge. Grant microphone permission for voice interaction or type your messages.
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-lg">
                 2
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Natural Dialogue</h3>
                 <p className="text-gray-600">
-                  Speak or type naturally. The AI understands context and responds 
-                  with relevant information and interactive UI elements.
+                  Speak or type naturally. The AI understands context and responds with relevant information and interactive elements.
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-lg">
                 3
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Interactive Cards</h3>
                 <p className="text-gray-600">
-                  Fill out forms, explore options, and take actions through 
-                  dynamic UI cards that appear based on your conversation.
+                  Fill out forms, explore options, and take actions through dynamic UI cards that appear based on your conversation.
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-lg">
                 4
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Family Coordination</h3>
                 <p className="text-gray-600">
-                  Set up wellness check-ins, emergency alerts, and family 
-                  notifications to keep everyone connected and safe.
+                  Set up wellness check-ins, emergency alerts, and family notifications to keep everyone connected and safe.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="text-center mt-12">
+        {/* CTA Section */}
+        <div className="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-12 shadow-2xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Ready to Get Started?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Experience the future of AI-powered wellness and care coordination
+          </p>
           <Link href="/concierge">
-            <Button size="lg" className="px-8 py-4">
-              Back to MyChart
+            <Button size="lg" className="px-10 py-5 text-lg font-semibold bg-white text-blue-600 hover:bg-gray-50 shadow-xl hover:shadow-2xl transition-all">
+              Try MyChart Now
             </Button>
           </Link>
         </div>
-      </div>
+      </section>
 
     </main>
   );
